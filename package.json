@@ -1,0 +1,18 @@
+{
+  "name": "react-redux-driver",
+  "version": "1.0.0",
+  "description": "Driver to reduce the amount of boiler-plate required to use redux with react.",
+  "main": "index.js",
+  "repository": "https://github.com/aeldarex/react-redux-driver.git",
+  "author": "Ian Middleton <ian.middleton.scl@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^10.0.1",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^5.7.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0"
+  }
+}
