@@ -11,7 +11,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "bson-objectid": "^1.2.4"
+    "bson-objectid": "^1.2.4",
+    "reselect": "^4.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
