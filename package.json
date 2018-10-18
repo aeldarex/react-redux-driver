@@ -6,7 +6,6 @@
   "repository": "https://github.com/aeldarex/react-redux-driver.git",
   "author": "Ian Middleton <ian.middleton.scl@gmail.com>",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "test": "jest"
   },

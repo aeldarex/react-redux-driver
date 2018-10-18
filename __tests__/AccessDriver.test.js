@@ -1,9 +1,9 @@
-import accessDriver from '../src/accessDriver';
+import AccessDriver from '../src/AccessDriver';
 import ReduxObject from '../src/ReduxObject';
 
 describe('find', () => {
   test('if object type does not extend ReduxObject throws error', () => {
-    expect(() => accessDriver.find({})).toThrowError(
+    expect(() => AccessDriver.find({})).toThrowError(
       'objectType must extend ReduxObject.',
     );
   });
@@ -14,7 +14,7 @@ describe('find', () => {
       class TestObject extends ReduxObject {}
 
       // When
-      const selector = accessDriver.find(TestObject);
+      const selector = AccessDriver.find(TestObject);
       const result = selector({});
 
       // Then
@@ -35,7 +35,7 @@ describe('find', () => {
       };
 
       // When
-      const selector = accessDriver.find(TestObject);
+      const selector = AccessDriver.find(TestObject);
       const result = selector(state);
 
       // Then

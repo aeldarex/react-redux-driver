@@ -1,12 +1,12 @@
 import { DRIVER_INSERT_ONE } from './actionTypes';
 
-const dispatchDriver = {
+const DispatchDriver = {
   insertOne(item) {
     return {
       type: DRIVER_INSERT_ONE,
-      payload: item,
+      payload: item
     };
-  },
+  }
 };
 
-export default dispatchDriver;
+export default DispatchDriver;

@@ -7,7 +7,7 @@ function createSliceSelector(stateSlice) {
   return state => (state[stateSlice] ? state[stateSlice] : {});
 }
 
-const accessDriver = {
+const AccessDriver = {
   find(objectType) {
     if (!(objectType.prototype instanceof ReduxObject)) {
       throw new Error('objectType must extend ReduxObject.');
@@ -15,7 +15,7 @@ const accessDriver = {
 
     const sliceSelector = createSliceSelector(objectType.stateSlice);
     return createSelector(sliceSelector, allValuesSelector);
-  },
+  }
 };
 
-export default accessDriver;
+export default AccessDriver;
