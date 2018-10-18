@@ -1,0 +1,1 @@
+export const DRIVER_INSERT_ONE = 'DRIVER_INSERT_ONE';
