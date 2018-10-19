@@ -39,3 +39,23 @@ test('inserted objects using insertOne action can be located with access driver 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject2]);
 });
+
+test('inserted objects using insertMany action can be located with access driver find selector', () => {
+  // Given
+  class TestObject extends ReduxObject {}
+
+  const testObject1 = new TestObject();
+  const testObject2 = new TestObject();
+
+  let state = {};
+
+  // When
+  const action = DispatchDriver.insertMany([testObject1, testObject2]);
+  state = reducer(state, action);
+
+  const selector = AccessDriver.find(TestObject);
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects).toEqual([testObject1, testObject2]);
+});
