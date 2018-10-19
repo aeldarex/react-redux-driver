@@ -8,14 +8,22 @@ function createSliceSelector(stateSlice) {
 }
 
 const AccessDriver = {
-  find(objectType) {
+  find(objectType, filter) {
     if (!(objectType.prototype instanceof ReduxObject)) {
       throw new Error('objectType must extend ReduxObject.');
     }
 
     const sliceSelector = createSliceSelector(objectType.stateSlice);
-    return createSelector(sliceSelector, allValuesSelector);
-  }
+    let selector = createSelector(sliceSelector, allValuesSelector);
+
+    if (filter) {
+      const filterKeys = Object.keys(filter);
+      const filterSelector = items => items.filter(i => filterKeys.every(k => i[k] === filter[k]));
+      selector = createSelector(selector, filterSelector);
+    }
+
+    return selector;
+  },
 };
 
 export default AccessDriver;
