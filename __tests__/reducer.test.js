@@ -31,7 +31,7 @@ test('given defined state and unhandled action type reducer returns state object
 
 describe('DRIVER_INSERT_ONE action', () => {
   describe('given undefined state', () => {
-    test('if object to insert is not of type ReduxObject returns empty state object', () => {
+    test('if given payload is not an instance of ReduxObject, returns empty state object', () => {
       // Given
       const action = {
         type: DRIVER_INSERT_ONE,
@@ -45,7 +45,7 @@ describe('DRIVER_INSERT_ONE action', () => {
       expect(updatedState).toEqual({});
     });
 
-    test('if object is valid ReduxObject, creates stateSlice and inserts object', () => {
+    test('if given payload is an instance of ReduxObject, creates stateSlice and inserts object', () => {
       // Given
       class TestObject extends ReduxObject {}
 
@@ -59,14 +59,16 @@ describe('DRIVER_INSERT_ONE action', () => {
       const updatedState = reducer(undefined, action);
 
       // Then
-      expect(updatedState[TestObject.stateSlice][testObject.id]).toBe(
-        testObject,
-      );
+      expect(updatedState).toEqual({
+        [TestObject.stateSlice]: {
+          [testObject.id]: testObject,
+        },
+      });
     });
   });
 
   describe('given defined state', () => {
-    test('if object to insert is not of type ReduxObject returns given state object', () => {
+    test('if given payload is not an instance of ReduxObject, returns given state object', () => {
       // Given
       const state = {};
 
@@ -82,7 +84,7 @@ describe('DRIVER_INSERT_ONE action', () => {
       expect(updatedState).toBe(state);
     });
 
-    describe('if object is valid ReduxObject', () => {
+    describe('if given payload is an instance of ReduxObject', () => {
       test('returns new state object', () => {
         // Given
         const existingState = {};
@@ -117,9 +119,11 @@ describe('DRIVER_INSERT_ONE action', () => {
           const updatedState = reducer({}, action);
 
           // Then
-          expect(updatedState[TestObject.stateSlice][testObject.id]).toBe(
-            testObject,
-          );
+          expect(updatedState).toEqual({
+            [TestObject.stateSlice]: {
+              [testObject.id]: testObject,
+            },
+          });
         });
       });
 
@@ -172,9 +176,11 @@ describe('DRIVER_INSERT_ONE action', () => {
           const updatedState = reducer(existingState, action);
 
           // Then
-          expect(updatedState[TestObject.stateSlice]).toEqual({
-            ...existingStateSlice,
-            [testObject.id]: testObject,
+          expect(updatedState).toEqual({
+            [TestObject.stateSlice]: {
+              ...existingStateSlice,
+              [testObject.id]: testObject,
+            },
           });
         });
 

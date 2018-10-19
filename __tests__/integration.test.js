@@ -3,20 +3,6 @@ import DispatchDriver from '../src/DispatchDriver';
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
 
-test('insertOne action created by dispatch driver is processed by reducer', () => {
-  // Given
-  class TestObject extends ReduxObject {}
-
-  const testObject = new TestObject();
-
-  // When
-  const action = DispatchDriver.insertOne(testObject);
-  const updatedState = reducer({}, action);
-
-  // Then
-  expect(updatedState[TestObject.stateSlice][testObject.id]).toBe(testObject);
-});
-
 test('inserted objects using insertOne action can be located with access driver find selector', () => {
   // Given
   class TestObject extends ReduxObject {}

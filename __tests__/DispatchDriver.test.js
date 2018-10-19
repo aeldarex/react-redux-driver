@@ -5,7 +5,7 @@ import ReduxObject from '../src/ReduxObject';
 describe('insertOne', () => {
   test('given object that is not an instance of a ReduxObject throws error', () => {
     expect(() => DispatchDriver.insertOne({})).toThrowError(
-      `Items inserted using the driver must be an instance of ${
+      `insertOne only accepts objects which are an instance of ${
         ReduxObject.name
       }.`,
     );

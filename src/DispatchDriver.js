@@ -5,7 +5,7 @@ const DispatchDriver = {
   insertOne(item) {
     if (!(item instanceof ReduxObject)) {
       throw new Error(
-        `Items inserted using the driver must be an instance of ${
+        `insertOne only accepts objects which are an instance of ${
           ReduxObject.name
         }.`,
       );
