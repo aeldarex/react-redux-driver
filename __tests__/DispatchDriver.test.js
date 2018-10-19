@@ -1,21 +1,39 @@
 import DispatchDriver from '../src/DispatchDriver';
 import { DRIVER_INSERT_ONE } from '../src/actionTypes';
+import ReduxObject from '../src/ReduxObject';
 
-test('insertOne returns DRIVER_INSERT_ONE action', () => {
-  // When
-  const result = DispatchDriver.insertOne({});
-
-  // Then
-  expect(result.type).toBe(DRIVER_INSERT_ONE);
+test('given object that is not an instance of a ReduxObject insertOne throws error', () => {
+  expect(() => DispatchDriver.insertOne({})).toThrowError(
+    `Items inserted using the driver must be an instance of ${
+      ReduxObject.name
+    }.`,
+  );
 });
 
-test('insertOne returns action with given object as payload', () => {
-  // Given
-  const expectedPayload = {};
+describe('given object is an instance of a ReduxObject', () => {
+  test('insertOne returns DRIVER_INSERT_ONE action', () => {
+    // Given
+    class TestObject extends ReduxObject {}
 
-  // When
-  const result = DispatchDriver.insertOne(expectedPayload);
+    const testObject = new TestObject();
 
-  // Then
-  expect(result.payload).toBe(expectedPayload);
+    // When
+    const result = DispatchDriver.insertOne(testObject);
+
+    // Then
+    expect(result.type).toBe(DRIVER_INSERT_ONE);
+  });
+
+  test('insertOne returns action with given object as payload', () => {
+    // Given
+    class TestObject extends ReduxObject {}
+
+    const testObject = new TestObject();
+
+    // When
+    const result = DispatchDriver.insertOne(testObject);
+
+    // Then
+    expect(result.payload).toBe(testObject);
+  });
 });

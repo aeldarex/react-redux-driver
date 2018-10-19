@@ -30,17 +30,18 @@ test('given defined state and unhandled action type reducer returns state object
 });
 
 describe('given undefined state and DRIVER_INSERT_ONE action type', () => {
-  test('if object to insert is not of type ReduxObject throws error', () => {
+  test('if object to insert is not of type ReduxObject returns empty state object', () => {
     // Given
     const action = {
       type: DRIVER_INSERT_ONE,
-      payload: {},
+      payload: { someProp: 'somePropValue' },
     };
 
+    // When
+    const updatedState = reducer(undefined, action);
+
     // Then
-    expect(() => reducer(undefined, action)).toThrowError(
-      'Payload for action type DRIVER_INSERT_ONE must be a ReduxObject.',
-    );
+    expect(updatedState).toEqual({});
   });
 
   test('if object is valid ReduxObject, creates stateSlice and inserts object', () => {
@@ -62,17 +63,20 @@ describe('given undefined state and DRIVER_INSERT_ONE action type', () => {
 });
 
 describe('given defined state and DRIVER_INSERT_ONE action type', () => {
-  test('if object to insert is not of type ReduxObject throws error', () => {
+  test('if object to insert is not of type ReduxObject returns given state object', () => {
     // Given
+    const state = {};
+
     const action = {
       type: DRIVER_INSERT_ONE,
-      payload: {},
+      payload: { someProp: 'somePropValue' },
     };
 
+    // When
+    const updatedState = reducer(state, action);
+
     // Then
-    expect(() => reducer({}, action)).toThrowError(
-      'Payload for action type DRIVER_INSERT_ONE must be a ReduxObject.',
-    );
+    expect(updatedState).toBe(state);
   });
 
   describe('if object is valid ReduxObject', () => {
@@ -171,7 +175,7 @@ describe('given defined state and DRIVER_INSERT_ONE action type', () => {
         });
       });
 
-      test('and object with id does exist, throws error', () => {
+      test('and object with id does exist, returns state without changes', () => {
         // Given
         class TestObject extends ReduxObject {}
 
@@ -188,12 +192,11 @@ describe('given defined state and DRIVER_INSERT_ONE action type', () => {
           payload: existingTestObject,
         };
 
+        // When
+        const updatedState = reducer(existingState, action);
+
         // Then
-        expect(() => reducer(existingState, action)).toThrowError(
-          `Cannot insert ${TestObject.name} with id ${
-            existingTestObject.id
-          } as it already exists in the state.`,
-        );
+        expect(updatedState).toBe(existingState);
       });
     });
   });
