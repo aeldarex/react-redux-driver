@@ -1,6 +1,10 @@
 import reducer from '../src/reducer';
-import { DRIVER_INSERT_ONE, DRIVER_INSERT_MANY } from '../src/actionTypes';
 import ReduxObject from '../src/ReduxObject';
+import {
+  DRIVER_INSERT_ONE,
+  DRIVER_INSERT_MANY,
+  DRIVER_DELETE_ONE,
+} from '../src/actionTypes';
 
 test('given undefined state and unhandled action type reducer returns empty object', () => {
   // Given
@@ -499,6 +503,278 @@ describe('DRIVER_INSERT_MANY action', () => {
           expect(
             updatedState[TestObject.stateSlice][existingTestObject.id],
           ).toBe(existingTestObject);
+        });
+      });
+    });
+  });
+});
+
+describe('DRIVER_DELETE_ONE action', () => {
+  describe('given undefined state', () => {
+    test('if payload objectType is undefined, returns empty state object', () => {
+      // Given
+      const action = {
+        type: DRIVER_DELETE_ONE,
+        payload: {},
+      };
+
+      // When
+      const result = reducer(undefined, action);
+
+      // Then
+      expect(result).toEqual({});
+    });
+
+    test('if payload objectType does not extend ReduxObject, returns empty state object', () => {
+      // Given
+      const action = {
+        type: DRIVER_DELETE_ONE,
+        payload: { objectType: {} },
+      };
+
+      // When
+      const result = reducer(undefined, action);
+
+      // Then
+      expect(result).toEqual({});
+    });
+
+    describe('if payload objectType does extend ReduxObject', () => {
+      test('and filter is undefined, returns empty state object', () => {
+        // Given
+        class TestObject extends ReduxObject {}
+
+        const action = {
+          type: DRIVER_DELETE_ONE,
+          payload: { objectType: TestObject },
+        };
+
+        // When
+        const result = reducer(undefined, action);
+
+        // Then
+        expect(result).toEqual({});
+      });
+
+      test('and filter is null, returns empty state object', () => {
+        // Given
+        class TestObject extends ReduxObject {}
+
+        const action = {
+          type: DRIVER_DELETE_ONE,
+          payload: { objectType: TestObject, filter: null },
+        };
+
+        // When
+        const result = reducer(undefined, action);
+
+        // Then
+        expect(result).toEqual({});
+      });
+    });
+  });
+
+  describe('given defined state', () => {
+    test('if payload objectType is undefined, returns unchanged state object', () => {
+      // Given
+      const state = {};
+      const action = {
+        type: DRIVER_DELETE_ONE,
+        payload: {},
+      };
+
+      // When
+      const updatedState = reducer(state, action);
+
+      // Then
+      expect(updatedState).toBe(state);
+    });
+
+    test('if payload objectType does not extend ReduxObject, returns unchanged state object', () => {
+      // Given
+      const state = {};
+      const action = {
+        type: DRIVER_DELETE_ONE,
+        payload: { objectType: {} },
+      };
+
+      // When
+      const updatedState = reducer(state, action);
+
+      // Then
+      expect(updatedState).toBe(state);
+    });
+
+    describe('if payload objectType does extend ReduxObject', () => {
+      test('and state slice is not populated, returns given state', () => {
+        // Given
+        class TestObject extends ReduxObject {}
+
+        const state = { someState: 'someStateValue' };
+        const action = {
+          type: DRIVER_DELETE_ONE,
+          payload: { objectType: TestObject },
+        };
+
+        // When
+        const updatedState = reducer(state, action);
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      describe('and state slice is populated', () => {
+        test('but empty, returns given state', () => {
+          // Given
+          class TestObject extends ReduxObject {}
+
+          const state = { [TestObject.stateSlice]: {} };
+          const action = {
+            type: DRIVER_DELETE_ONE,
+            payload: { objectType: TestObject },
+          };
+
+          // When
+          const updatedState = reducer(state, action);
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+
+        describe('with existing objects', () => {
+          test('and filter is undefined, deletes first object from state', () => {
+            // Given
+            class TestObject extends ReduxObject {}
+
+            const testObject1 = new TestObject();
+            const testObject2 = new TestObject();
+            const state = {
+              [TestObject.stateSlice]: {
+                [testObject1.id]: testObject1,
+                [testObject2.id]: testObject2,
+              },
+            };
+
+            const action = {
+              type: DRIVER_DELETE_ONE,
+              payload: { objectType: TestObject },
+            };
+
+            // When
+            const updatedState = reducer(state, action);
+
+            // Then
+            expect(updatedState).toEqual({
+              [TestObject.stateSlice]: {
+                [testObject2.id]: testObject2,
+              },
+            });
+          });
+
+          test('and filter is null, deletes first object from state', () => {
+            // Given
+            class TestObject extends ReduxObject {}
+
+            const testObject1 = new TestObject();
+            const testObject2 = new TestObject();
+            const state = {
+              [TestObject.stateSlice]: {
+                [testObject1.id]: testObject1,
+                [testObject2.id]: testObject2,
+              },
+            };
+
+            const action = {
+              type: DRIVER_DELETE_ONE,
+              payload: { objectType: TestObject, filter: null },
+            };
+
+            // When
+            const updatedState = reducer(state, action);
+
+            // Then
+            expect(updatedState).toEqual({
+              [TestObject.stateSlice]: {
+                [testObject2.id]: testObject2,
+              },
+            });
+          });
+
+          describe('and filter is defined', () => {
+            test('and matching objects exists, deletes first object matching filter', () => {
+              // Given
+              class TestObject extends ReduxObject {
+                constructor(propA) {
+                  super();
+                  this.propA = propA;
+                }
+              }
+
+              const propAValue = 21;
+              const testObject1 = new TestObject(35);
+              const testObject2 = new TestObject(propAValue);
+              const testObject3 = new TestObject(propAValue);
+              const state = {
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject2.id]: testObject2,
+                  [testObject3.id]: testObject3,
+                },
+              };
+
+              const action = {
+                type: DRIVER_DELETE_ONE,
+                payload: {
+                  objectType: TestObject,
+                  filter: { propA: propAValue },
+                },
+              };
+
+              // When
+              const updatedState = reducer(state, action);
+
+              // Then
+              expect(updatedState).toEqual({
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject3.id]: testObject3,
+                },
+              });
+            });
+
+            test('but no matching object, returns given state', () => {
+              // Given
+              class TestObject extends ReduxObject {
+                constructor(propA) {
+                  super();
+                  this.propA = propA;
+                }
+              }
+
+              const testObject1 = new TestObject(35);
+              const testObject2 = new TestObject(25);
+              const state = {
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject2.id]: testObject2,
+                },
+              };
+
+              const action = {
+                type: DRIVER_DELETE_ONE,
+                payload: {
+                  objectType: TestObject,
+                  filter: { propA: 15 },
+                },
+              };
+
+              // When
+              const updatedState = reducer(state, action);
+
+              // Then
+              expect(updatedState).toBe(state);
+            });
+          });
         });
       });
     });

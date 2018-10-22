@@ -1,6 +1,12 @@
 import createReducer from './utils/createReducer';
+import isEmptyObject from './utils/isEmptyObject';
+import isReduxObjectType from './utils/isReduxObjectType';
 import ReduxObject from './ReduxObject';
-import { DRIVER_INSERT_ONE, DRIVER_INSERT_MANY } from './actionTypes';
+import {
+  DRIVER_INSERT_ONE,
+  DRIVER_INSERT_MANY,
+  DRIVER_DELETE_ONE,
+} from './actionTypes';
 
 function insertOne(state, reduxObject) {
   if (!(reduxObject instanceof ReduxObject)) {
@@ -55,9 +61,46 @@ function insertMany(state, reduxObjects) {
     : state;
 }
 
+function deleteOne(state, { objectType, filter }) {
+  if (isEmptyObject(state) || !isReduxObjectType(objectType)) {
+    return state;
+  }
+
+  const { stateSlice } = objectType;
+  const currentTable = state[stateSlice];
+  if (!currentTable || isEmptyObject(currentTable)) {
+    return state;
+  }
+
+  let updatedTable;
+  if (!filter) {
+    const firstItemKey = Object.keys(currentTable)[0];
+    const { [firstItemKey]: firstItemValue, ...itemsToKeep } = currentTable;
+    updatedTable = itemsToKeep;
+  } else {
+    const allItems = Object.entries(currentTable);
+
+    const filterKeys = Object.keys(filter);
+    const entryToDelete = allItems.find(i => filterKeys.every(k => i[1][k] === filter[k]));
+
+    if (entryToDelete) {
+      const { [entryToDelete[0]]: entryValue, ...itemsToKeep } = currentTable;
+      updatedTable = itemsToKeep;
+    } else {
+      return state;
+    }
+  }
+
+  return {
+    ...state,
+    [stateSlice]: updatedTable,
+  };
+}
+
 const handlers = {
   [DRIVER_INSERT_ONE]: insertOne,
   [DRIVER_INSERT_MANY]: insertMany,
+  [DRIVER_DELETE_ONE]: deleteOne,
 };
 
 export default createReducer({}, handlers);
