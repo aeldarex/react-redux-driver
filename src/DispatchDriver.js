@@ -1,5 +1,10 @@
-import { DRIVER_INSERT_ONE, DRIVER_INSERT_MANY } from './actionTypes';
+import {
+  DRIVER_INSERT_ONE,
+  DRIVER_INSERT_MANY,
+  DRIVER_DELETE_ONE,
+} from './actionTypes';
 import ReduxObject from './ReduxObject';
+import isReduxObjectType from './utils/isReduxObjectType';
 
 const DispatchDriver = {
   insertOne(item) {
@@ -27,6 +32,19 @@ const DispatchDriver = {
     return {
       type: DRIVER_INSERT_MANY,
       payload: items,
+    };
+  },
+
+  deleteOne(objectType, filter) {
+    if (!isReduxObjectType(objectType)) {
+      throw new Error(
+        `deleteOne only accepts object types which extend ${ReduxObject.name}.`,
+      );
+    }
+
+    return {
+      type: DRIVER_DELETE_ONE,
+      payload: { objectType, filter },
     };
   },
 };

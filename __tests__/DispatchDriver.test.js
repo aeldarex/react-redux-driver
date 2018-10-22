@@ -1,5 +1,9 @@
 import DispatchDriver from '../src/DispatchDriver';
-import { DRIVER_INSERT_ONE, DRIVER_INSERT_MANY } from '../src/actionTypes';
+import {
+  DRIVER_INSERT_ONE,
+  DRIVER_INSERT_MANY,
+  DRIVER_DELETE_ONE,
+} from '../src/actionTypes';
 import ReduxObject from '../src/ReduxObject';
 
 describe('insertOne', () => {
@@ -86,6 +90,63 @@ describe('insertMany', () => {
 
       // Then
       expect(result.payload).toBe(objectArray);
+    });
+  });
+});
+
+describe('deleteOne', () => {
+  test('given undefined objectType, throws error', () => {
+    expect(() => DispatchDriver.deleteOne()).toThrowError(
+      `deleteOne only accepts object types which extend ${ReduxObject.name}.`,
+    );
+  });
+
+  test('given null objectType, throws error', () => {
+    expect(() => DispatchDriver.deleteOne(null)).toThrowError(
+      `deleteOne only accepts object types which extend ${ReduxObject.name}.`,
+    );
+  });
+
+  test('given objectType which does not extend ReduxObject, throws error', () => {
+    expect(() => DispatchDriver.deleteOne({})).toThrowError(
+      `deleteOne only accepts object types which extend ${ReduxObject.name}.`,
+    );
+  });
+
+  describe('given objectType which does extend ReduxObject', () => {
+    test('returns action with type of DRIVER_DELETE_ONE', () => {
+      // Given
+      class TestObject extends ReduxObject {}
+
+      // When
+      const result = DispatchDriver.deleteOne(TestObject);
+
+      // Then
+      expect(result.type).toBe(DRIVER_DELETE_ONE);
+    });
+
+    test('returns action with payload containing given object type', () => {
+      // Given
+      class TestObject extends ReduxObject {}
+
+      // When
+      const result = DispatchDriver.deleteOne(TestObject);
+
+      // Then
+      expect(result.payload.objectType).toBe(TestObject);
+    });
+
+    test('returns action with payload containing given filter', () => {
+      // Given
+      class TestObject extends ReduxObject {}
+
+      const filter = {};
+
+      // When
+      const result = DispatchDriver.deleteOne(TestObject, filter);
+
+      // Then
+      expect(result.payload.filter).toBe(filter);
     });
   });
 });
