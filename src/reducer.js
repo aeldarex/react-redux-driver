@@ -7,6 +7,7 @@ import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
+  DRIVER_DELETE_MANY,
 } from './actionTypes';
 
 function insertOne(state, reduxObject) {
@@ -114,10 +115,50 @@ function deleteOne(state, { objectType, filter }) {
   };
 }
 
+function deleteMany(state, { objectType, filter }) {
+  if (isEmptyObject(state) || !isReduxObjectType(objectType)) {
+    warning(
+      isReduxObjectType(objectType),
+      "A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
+    );
+    return state;
+  }
+
+  const { stateSlice } = objectType;
+  const currentTable = state[stateSlice];
+  if (!currentTable || isEmptyObject(currentTable)) {
+    return state;
+  }
+
+  let updatedTable;
+  if (!filter) {
+    updatedTable = {};
+  } else {
+    const allItems = Object.entries(currentTable);
+
+    const filterKeys = Object.keys(filter);
+    const entriesToDelete = allItems.filter(i => filterKeys.every(k => i[1][k] === filter[k]));
+
+    if (entriesToDelete.length !== 0) {
+      const itemsToKeep = { ...currentTable };
+      entriesToDelete.forEach(e => delete itemsToKeep[e[0]]);
+      updatedTable = itemsToKeep;
+    } else {
+      return state;
+    }
+  }
+
+  return {
+    ...state,
+    [stateSlice]: updatedTable,
+  };
+}
+
 const handlers = {
   [DRIVER_INSERT_ONE]: insertOne,
   [DRIVER_INSERT_MANY]: insertMany,
   [DRIVER_DELETE_ONE]: deleteOne,
+  [DRIVER_DELETE_MANY]: deleteMany,
 };
 
 export default createReducer({}, handlers);
