@@ -2,6 +2,7 @@ import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
+  DRIVER_DELETE_MANY,
 } from './actionTypes';
 
 const DispatchDriver = {
@@ -22,6 +23,13 @@ const DispatchDriver = {
   deleteOne(objectType, filter) {
     return {
       type: DRIVER_DELETE_ONE,
+      payload: { objectType, filter },
+    };
+  },
+
+  deleteMany(objectType, filter) {
+    return {
+      type: DRIVER_DELETE_MANY,
       payload: { objectType, filter },
     };
   },

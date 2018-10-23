@@ -3,6 +3,7 @@ import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
+  DRIVER_DELETE_MANY,
 } from '../src/actionTypes';
 
 describe('insertOne', () => {
@@ -73,6 +74,38 @@ describe('deleteOne', () => {
 
     // When
     const result = DispatchDriver.deleteOne({}, filter);
+
+    // Then
+    expect(result.payload.filter).toBe(filter);
+  });
+});
+
+describe('deleteMany', () => {
+  test('returns action with type of DRIVER_DELETE_MANY', () => {
+    // When
+    const result = DispatchDriver.deleteMany();
+
+    // Then
+    expect(result.type).toBe(DRIVER_DELETE_MANY);
+  });
+
+  test('returns action with payload containing given object type', () => {
+    // Given
+    const objectType = {};
+
+    // When
+    const result = DispatchDriver.deleteMany(objectType);
+
+    // Then
+    expect(result.payload.objectType).toBe(objectType);
+  });
+
+  test('returns action with payload containing given filter', () => {
+    // Given
+    const filter = {};
+
+    // When
+    const result = DispatchDriver.deleteMany({}, filter);
 
     // Then
     expect(result.payload.filter).toBe(filter);
