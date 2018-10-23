@@ -80,3 +80,38 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject2, testObject4]);
 });
+
+test('inserted objects using insertMany, then delete some with deleteMany, then get all remaining with access driver find selector', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA) {
+      super();
+      this.propA = propA;
+    }
+  }
+
+  const testObject1 = new TestObject(1);
+  const testObject2 = new TestObject(2);
+  const testObject3 = new TestObject(3);
+  const testObject4 = new TestObject(2);
+
+  let state = {};
+
+  // When
+  const insertAction = DispatchDriver.insertMany([
+    testObject1,
+    testObject2,
+    testObject3,
+    testObject4,
+  ]);
+  state = reducer(state, insertAction);
+
+  const deleteAction = DispatchDriver.deleteMany(TestObject, { propA: 2 });
+  state = reducer(state, deleteAction);
+
+  const selector = AccessDriver.find(TestObject);
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects).toEqual([testObject1, testObject3]);
+});
