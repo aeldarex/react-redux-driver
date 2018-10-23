@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
 import {
@@ -5,6 +6,16 @@ import {
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
 } from '../src/actionTypes';
+
+let warningStub;
+
+beforeEach(() => {
+  warningStub = sinon.stub(console, 'error');
+});
+
+afterEach(() => {
+  warningStub.restore();
+});
 
 test('given undefined state and unhandled action type reducer returns empty object', () => {
   // Given
@@ -34,6 +45,23 @@ test('given defined state and unhandled action type reducer returns state object
 });
 
 describe('DRIVER_INSERT_ONE action', () => {
+  test('if payload is not an instance of a ReduxObject, produces warning', () => {
+    // Given
+    const action = {
+      type: DRIVER_INSERT_ONE,
+      payload: { someProp: 'somePropValue' },
+    };
+
+    // When
+    reducer({}, action);
+
+    // Then
+    expect(warningStub.calledOnce).toBe(true);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      'Warning: A DRIVER_INSERT_ONE action was ignored because the payload was not an instance of a ReduxObject.',
+    );
+  });
+
   describe('given undefined state', () => {
     test('if given payload is not an instance of ReduxObject, returns empty state object', () => {
       // Given
@@ -217,6 +245,47 @@ describe('DRIVER_INSERT_ONE action', () => {
 });
 
 describe('DRIVER_INSERT_MANY action', () => {
+  test('if payload is not an array, produces warning', () => {
+    // Given
+    const action = {
+      type: DRIVER_INSERT_MANY,
+      payload: { someProp: 'somePropValue' },
+    };
+
+    // When
+    reducer({}, action);
+
+    // Then
+    expect(warningStub.calledOnce).toBe(true);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      'Warning: A DRIVER_INSERT_MANY action was ignored because the payload was not an array.',
+    );
+  });
+
+  test('if given payload is an array of mixed objects, produces warnings for objects which are not instances of ReduxObject', () => {
+    // Given
+    class TestObject extends ReduxObject {}
+
+    const testObject1 = new TestObject();
+    const testObject2 = new TestObject();
+    const action = {
+      type: DRIVER_INSERT_MANY,
+      payload: [testObject1, {}, testObject2, {}],
+    };
+
+    // When
+    reducer({}, action);
+
+    // Then
+    expect(warningStub.getCalls().length).toBe(2);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      'Warning: An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
+    );
+    expect(warningStub.getCall(1).args[0]).toBe(
+      'Warning: An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
+    );
+  });
+
   describe('given undefined state', () => {
     test('if given payload is not an array, returns empty state object', () => {
       // Given
@@ -510,6 +579,40 @@ describe('DRIVER_INSERT_MANY action', () => {
 });
 
 describe('DRIVER_DELETE_ONE action', () => {
+  test('if payload objectType is undefined, produces warning', () => {
+    // Given
+    const action = {
+      type: DRIVER_DELETE_ONE,
+      payload: {},
+    };
+
+    // When
+    reducer({}, action);
+
+    // Then
+    expect(warningStub.calledOnce).toBe(true);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      "Warning: A DRIVER_DELETE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
+    );
+  });
+
+  test('if payload objectType is object which does not extend ReduxObject, produces warning', () => {
+    // Given
+    const action = {
+      type: DRIVER_DELETE_ONE,
+      payload: { objectType: {} },
+    };
+
+    // When
+    reducer({}, action);
+
+    // Then
+    expect(warningStub.calledOnce).toBe(true);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      "Warning: A DRIVER_DELETE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
+    );
+  });
+
   describe('given undefined state', () => {
     test('if payload objectType is undefined, returns empty state object', () => {
       // Given

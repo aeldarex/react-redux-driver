@@ -1,3 +1,4 @@
+import warning from 'warning';
 import createReducer from './utils/createReducer';
 import isEmptyObject from './utils/isEmptyObject';
 import isReduxObjectType from './utils/isReduxObjectType';
@@ -10,6 +11,10 @@ import {
 
 function insertOne(state, reduxObject) {
   if (!(reduxObject instanceof ReduxObject)) {
+    warning(
+      false,
+      'A DRIVER_INSERT_ONE action was ignored because the payload was not an instance of a ReduxObject.',
+    );
     return state;
   }
 
@@ -33,6 +38,10 @@ function insertOne(state, reduxObject) {
 
 function insertMany(state, reduxObjects) {
   if (!Array.isArray(reduxObjects)) {
+    warning(
+      false,
+      'A DRIVER_INSERT_MANY action was ignored because the payload was not an array.',
+    );
     return state;
   }
 
@@ -40,6 +49,10 @@ function insertMany(state, reduxObjects) {
 
   reduxObjects.forEach((x) => {
     if (!(x instanceof ReduxObject)) {
+      warning(
+        false,
+        'An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
+      );
       return;
     }
 
@@ -63,6 +76,10 @@ function insertMany(state, reduxObjects) {
 
 function deleteOne(state, { objectType, filter }) {
   if (isEmptyObject(state) || !isReduxObjectType(objectType)) {
+    warning(
+      isReduxObjectType(objectType),
+      "A DRIVER_DELETE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
+    );
     return state;
   }
 
