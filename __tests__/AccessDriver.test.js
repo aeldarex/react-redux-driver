@@ -1,5 +1,16 @@
+import sinon from 'sinon';
 import AccessDriver from '../src/AccessDriver';
 import ReduxObject from '../src/ReduxObject';
+
+let warningStub;
+
+beforeEach(() => {
+  warningStub = sinon.stub(console, 'error');
+});
+
+afterEach(() => {
+  warningStub.restore();
+});
 
 describe('find', () => {
   test('if object type does not extend ReduxObject throws error', () => {
@@ -143,6 +154,34 @@ describe('find', () => {
 
       // Then
       expect(result).toEqual([testObject2]);
+    });
+
+    test('if filter object function throws error for item, excludes item without propagating error', () => {
+      // Given
+      class TestObject extends ReduxObject {
+        constructor(propA) {
+          super();
+          this.propA = propA;
+        }
+      }
+
+      const testObject1 = new TestObject({ propB: 'a cool string', propC: 5 });
+      const testObject2 = new TestObject({ propB: null, propC: 8 });
+      const state = {
+        [TestObject.stateSlice]: {
+          [testObject1.id]: testObject1,
+          [testObject2.id]: testObject2,
+        },
+      };
+
+      // When
+      const selector = AccessDriver.find(TestObject, {
+        propA: { propB: x => x.includes('cool'), propC: x => x <= 5 },
+      });
+      const result = selector(state);
+
+      // Then
+      expect(result).toEqual([testObject1]);
     });
   });
 });

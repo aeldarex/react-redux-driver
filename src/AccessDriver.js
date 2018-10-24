@@ -42,7 +42,13 @@ const AccessDriver = {
     if (filter) {
       const filterFunctions = createFilterFunctionList(filter);
 
-      const filterSelector = items => items.filter(i => filterFunctions.every(f => f(i)));
+      const filterSelector = items => items.filter((i) => {
+        try {
+          return filterFunctions.every(f => f(i));
+        } catch (e) {
+          return false;
+        }
+      });
       selector = createSelector(selector, filterSelector);
     }
 
