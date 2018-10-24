@@ -13,10 +13,24 @@ afterEach(() => {
 });
 
 describe('find', () => {
-  test('if object type does not extend ReduxObject throws error', () => {
-    expect(() => AccessDriver.find({})).toThrowError(
-      'objectType must extend ReduxObject.',
+  test('if object type does not extend ReduxObject, publishes warning', () => {
+    // When
+    AccessDriver.find({});
+
+    // Then
+    expect(warningStub.calledOnce).toBe(true);
+    expect(warningStub.getCall(0).args[0]).toBe(
+      'Warning: To create a working selector objectType must extend ReduxObject.',
     );
+  });
+
+  test('if object type does not extend ReduxObject, returns selector which returns empty array', () => {
+    // When
+    const selector = AccessDriver.find({});
+    const result = selector({});
+
+    // Then
+    expect(result).toEqual([]);
   });
 
   describe('if object type extends ReduxObject returns selector which', () => {

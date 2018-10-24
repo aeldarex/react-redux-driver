@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect';
-import ReduxObject from './ReduxObject';
+import warning from 'warning';
+import isReduxObjectType from './utils/isReduxObjectType';
 
 const allValuesSelector = slice => (slice ? Object.values(slice) : []);
 
@@ -32,9 +33,10 @@ function createFilterFunctionList(filter) {
 
 const AccessDriver = {
   find(objectType, filter) {
-    if (!(objectType.prototype instanceof ReduxObject)) {
-      throw new Error('objectType must extend ReduxObject.');
-    }
+    warning(
+      isReduxObjectType(objectType),
+      'To create a working selector objectType must extend ReduxObject.',
+    );
 
     const sliceSelector = createSliceSelector(objectType.stateSlice);
     let selector = createSelector(sliceSelector, allValuesSelector);
