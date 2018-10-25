@@ -1,15 +1,21 @@
 import sinon from 'sinon';
 import AccessDriver from '../src/AccessDriver';
 import ReduxObject from '../src/ReduxObject';
+import * as filterUtils from '../src/utils/createFilterFunctionList';
 
 let warningStub;
+let createFilterFunctionListStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
+
+  createFilterFunctionListStub = sinon.stub(filterUtils, 'default');
+  createFilterFunctionListStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
+  createFilterFunctionListStub.restore();
 });
 
 describe('find', () => {
@@ -46,7 +52,7 @@ describe('find', () => {
       expect(result).toEqual([]);
     });
 
-    test('if no filter object specfied gets all objects of type', () => {
+    test('if no filter object specified gets all objects of type', () => {
       // Given
       class TestObject extends ReduxObject {}
 
@@ -67,135 +73,70 @@ describe('find', () => {
       expect(result).toEqual([testObject1, testObject2]);
     });
 
-    test('if filter object is specified with primitive, gets objects which match filter object with strict equality', () => {
-      // Given
-      class TestObject extends ReduxObject {}
+    describe('if filter object specified', () => {
+      test('returns all objects that pass all tests in created filter function list', () => {
+        // Given
+        class TestObject extends ReduxObject {}
 
-      const testObject1 = new TestObject();
-      const testObject2 = new TestObject();
-      const state = {
-        [TestObject.stateSlice]: {
-          [testObject1.id]: testObject1,
-          [testObject2.id]: testObject2,
-        },
-      };
+        const testObject1 = new TestObject();
+        const testObject2 = new TestObject();
+        const state = {
+          [TestObject.stateSlice]: {
+            [testObject1.id]: testObject1,
+            [testObject2.id]: testObject2,
+          },
+        };
 
-      // When
-      const selector = AccessDriver.find(TestObject, { id: testObject2.id });
-      const result = selector(state);
+        const filter = {};
 
-      // Then
-      expect(result).toEqual([testObject2]);
-    });
+        const func1 = () => true;
+        const func2 = x => x === testObject2;
+        createFilterFunctionListStub
+          .withArgs(sinon.match.same(filter))
+          .returns([func1, func2]);
 
-    test('if filter object is specified with function, gets objects which match filter object by satisfying function', () => {
-      // Given
-      class TestObject extends ReduxObject {
-        constructor(propA) {
-          super();
-          this.propA = propA;
-        }
-      }
+        // When
+        const selector = AccessDriver.find(TestObject, filter);
+        const result = selector(state);
 
-      const testObject1 = new TestObject(10);
-      const testObject2 = new TestObject(40);
-      const state = {
-        [TestObject.stateSlice]: {
-          [testObject1.id]: testObject1,
-          [testObject2.id]: testObject2,
-        },
-      };
-
-      // When
-      const selector = AccessDriver.find(TestObject, { propA: x => x > 20 });
-      const result = selector(state);
-
-      // Then
-      expect(result).toEqual([testObject2]);
-    });
-
-    test('if filter object is multi-level, gets objects which match filter object at the deeper level', () => {
-      // Given
-      class TestObject extends ReduxObject {
-        constructor(propA) {
-          super();
-          this.propA = propA;
-        }
-      }
-
-      const testObject1 = new TestObject({ propB: 10, propC: 5 });
-      const testObject2 = new TestObject({ propB: 40, propC: 8 });
-      const state = {
-        [TestObject.stateSlice]: {
-          [testObject1.id]: testObject1,
-          [testObject2.id]: testObject2,
-        },
-      };
-
-      // When
-      const selector = AccessDriver.find(TestObject, {
-        propA: { propB: 10, propC: x => x <= 5 },
+        // Then
+        expect(result).toEqual([testObject2]);
       });
-      const result = selector(state);
 
-      // Then
-      expect(result).toEqual([testObject1]);
-    });
+      test('returns only objects that do no throw errors when running created filter function list', () => {
+        // Given
+        class TestObject extends ReduxObject {}
 
-    test('if filter object contains nulls, correctly handles object mapping', () => {
-      // Given
-      class TestObject extends ReduxObject {
-        constructor(propA) {
-          super();
-          this.propA = propA;
-        }
-      }
+        const testObject1 = new TestObject();
+        const testObject2 = new TestObject();
+        const state = {
+          [TestObject.stateSlice]: {
+            [testObject1.id]: testObject1,
+            [testObject2.id]: testObject2,
+          },
+        };
 
-      const testObject1 = new TestObject({ propB: 10, propC: 5 });
-      const testObject2 = new TestObject({ propB: null, propC: 8 });
-      const state = {
-        [TestObject.stateSlice]: {
-          [testObject1.id]: testObject1,
-          [testObject2.id]: testObject2,
-        },
-      };
+        const filter = {};
 
-      // When
-      const selector = AccessDriver.find(TestObject, {
-        propA: { propB: null, propC: x => x > 5 },
+        const func1 = () => true;
+        const func2 = (x) => {
+          if (x === testObject2) {
+            throw new Error();
+          }
+          return true;
+        };
+
+        createFilterFunctionListStub
+          .withArgs(sinon.match.same(filter))
+          .returns([func1, func2]);
+
+        // When
+        const selector = AccessDriver.find(TestObject, filter);
+        const result = selector(state);
+
+        // Then
+        expect(result).toEqual([testObject1]);
       });
-      const result = selector(state);
-
-      // Then
-      expect(result).toEqual([testObject2]);
-    });
-
-    test('if filter object function throws error for item, excludes item without propagating error', () => {
-      // Given
-      class TestObject extends ReduxObject {
-        constructor(propA) {
-          super();
-          this.propA = propA;
-        }
-      }
-
-      const testObject1 = new TestObject({ propB: 'a cool string', propC: 5 });
-      const testObject2 = new TestObject({ propB: null, propC: 8 });
-      const state = {
-        [TestObject.stateSlice]: {
-          [testObject1.id]: testObject1,
-          [testObject2.id]: testObject2,
-        },
-      };
-
-      // When
-      const selector = AccessDriver.find(TestObject, {
-        propA: { propB: x => x.includes('cool'), propC: x => x <= 5 },
-      });
-      const result = selector(state);
-
-      // Then
-      expect(result).toEqual([testObject1]);
     });
   });
 });

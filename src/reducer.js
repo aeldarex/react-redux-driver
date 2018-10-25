@@ -2,6 +2,7 @@ import warning from 'warning';
 import createReducer from './utils/createReducer';
 import isEmptyObject from './utils/isEmptyObject';
 import isReduxObjectType from './utils/isReduxObjectType';
+import createFilterFunctionList from './utils/createFilterFunctionList';
 import ReduxObject from './ReduxObject';
 import {
   DRIVER_INSERT_ONE,
@@ -96,13 +97,13 @@ function deleteOne(state, { objectType, filter }) {
     const { [firstItemKey]: firstItemValue, ...itemsToKeep } = currentTable;
     updatedTable = itemsToKeep;
   } else {
-    const allItems = Object.entries(currentTable);
+    const filterFunctions = createFilterFunctionList(filter);
 
-    const filterKeys = Object.keys(filter);
-    const entryToDelete = allItems.find(i => filterKeys.every(k => i[1][k] === filter[k]));
+    const allEntries = Object.entries(currentTable);
+    const entryToDelete = allEntries.find(e => filterFunctions.every(f => f(e[1])));
 
     if (entryToDelete) {
-      const { [entryToDelete[0]]: entryValue, ...itemsToKeep } = currentTable;
+      const { [entryToDelete[0]]: _, ...itemsToKeep } = currentTable;
       updatedTable = itemsToKeep;
     } else {
       return state;
@@ -134,10 +135,10 @@ function deleteMany(state, { objectType, filter }) {
   if (!filter) {
     updatedTable = {};
   } else {
-    const allItems = Object.entries(currentTable);
+    const filterFunctions = createFilterFunctionList(filter);
 
-    const filterKeys = Object.keys(filter);
-    const entriesToDelete = allItems.filter(i => filterKeys.every(k => i[1][k] === filter[k]));
+    const allEntries = Object.entries(currentTable);
+    const entriesToDelete = allEntries.filter(e => filterFunctions.every(f => f(e[1])));
 
     if (entriesToDelete.length !== 0) {
       const itemsToKeep = { ...currentTable };

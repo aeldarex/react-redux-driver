@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
+import * as filterUtils from '../src/utils/createFilterFunctionList';
 import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
@@ -9,13 +10,18 @@ import {
 } from '../src/actionTypes';
 
 let warningStub;
+let createFilterFunctionListStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
+
+  createFilterFunctionListStub = sinon.stub(filterUtils, 'default');
+  createFilterFunctionListStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
+  createFilterFunctionListStub.restore();
 });
 
 test('given undefined state and unhandled action type reducer returns empty object', () => {
@@ -807,17 +813,11 @@ describe('DRIVER_DELETE_ONE action', () => {
           describe('and filter is defined', () => {
             test('and matching objects exists, deletes first object matching filter', () => {
               // Given
-              class TestObject extends ReduxObject {
-                constructor(propA) {
-                  super();
-                  this.propA = propA;
-                }
-              }
+              class TestObject extends ReduxObject {}
 
-              const propAValue = 21;
-              const testObject1 = new TestObject(35);
-              const testObject2 = new TestObject(propAValue);
-              const testObject3 = new TestObject(propAValue);
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
+              const testObject3 = new TestObject();
               const state = {
                 [TestObject.stateSlice]: {
                   [testObject1.id]: testObject1,
@@ -826,13 +826,21 @@ describe('DRIVER_DELETE_ONE action', () => {
                 },
               };
 
+              const filter = {};
+
               const action = {
                 type: DRIVER_DELETE_ONE,
                 payload: {
                   objectType: TestObject,
-                  filter: { propA: propAValue },
+                  filter,
                 },
               };
+
+              const func1 = () => true;
+              const func2 = x => x === testObject2 || x === testObject3;
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1, func2]);
 
               // When
               const updatedState = reducer(state, action);
@@ -848,15 +856,10 @@ describe('DRIVER_DELETE_ONE action', () => {
 
             test('but no matching object, returns given state', () => {
               // Given
-              class TestObject extends ReduxObject {
-                constructor(propA) {
-                  super();
-                  this.propA = propA;
-                }
-              }
+              class TestObject extends ReduxObject {}
 
-              const testObject1 = new TestObject(35);
-              const testObject2 = new TestObject(25);
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
               const state = {
                 [TestObject.stateSlice]: {
                   [testObject1.id]: testObject1,
@@ -864,13 +867,20 @@ describe('DRIVER_DELETE_ONE action', () => {
                 },
               };
 
+              const filter = {};
+
               const action = {
                 type: DRIVER_DELETE_ONE,
                 payload: {
                   objectType: TestObject,
-                  filter: { propA: 15 },
+                  filter,
                 },
               };
+
+              const func1 = () => false;
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1]);
 
               // When
               const updatedState = reducer(state, action);
@@ -1103,19 +1113,13 @@ describe('DRIVER_DELETE_MANY action', () => {
           });
 
           describe('and filter is defined', () => {
-            test('and matching objects exists, deletes all objects matching filter', () => {
+            test('and matching objects exists, deletes all object matching filter', () => {
               // Given
-              class TestObject extends ReduxObject {
-                constructor(propA) {
-                  super();
-                  this.propA = propA;
-                }
-              }
+              class TestObject extends ReduxObject {}
 
-              const propAValue = 21;
-              const testObject1 = new TestObject(35);
-              const testObject2 = new TestObject(propAValue);
-              const testObject3 = new TestObject(propAValue);
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
+              const testObject3 = new TestObject();
               const state = {
                 [TestObject.stateSlice]: {
                   [testObject1.id]: testObject1,
@@ -1124,13 +1128,21 @@ describe('DRIVER_DELETE_MANY action', () => {
                 },
               };
 
+              const filter = {};
+
               const action = {
                 type: DRIVER_DELETE_MANY,
                 payload: {
                   objectType: TestObject,
-                  filter: { propA: propAValue },
+                  filter,
                 },
               };
+
+              const func1 = () => true;
+              const func2 = x => x === testObject2 || x === testObject3;
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1, func2]);
 
               // When
               const updatedState = reducer(state, action);
@@ -1145,15 +1157,10 @@ describe('DRIVER_DELETE_MANY action', () => {
 
             test('but no matching object, returns given state', () => {
               // Given
-              class TestObject extends ReduxObject {
-                constructor(propA) {
-                  super();
-                  this.propA = propA;
-                }
-              }
+              class TestObject extends ReduxObject {}
 
-              const testObject1 = new TestObject(35);
-              const testObject2 = new TestObject(25);
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
               const state = {
                 [TestObject.stateSlice]: {
                   [testObject1.id]: testObject1,
@@ -1161,13 +1168,20 @@ describe('DRIVER_DELETE_MANY action', () => {
                 },
               };
 
+              const filter = {};
+
               const action = {
                 type: DRIVER_DELETE_MANY,
                 payload: {
                   objectType: TestObject,
-                  filter: { propA: 15 },
+                  filter,
                 },
               };
+
+              const func1 = () => false;
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1]);
 
               // When
               const updatedState = reducer(state, action);
