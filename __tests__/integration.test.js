@@ -169,3 +169,81 @@ test('insert objects using insertMany action, then find specific objects using c
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject3]);
 });
+
+test('insert objects using insertMany action, then delete one with deleteOne using complex filter, then get all remaining with find', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'hello' });
+  const testObject2 = new TestObject(2, { propC: 'goodbye' });
+  const testObject3 = new TestObject(3, { propC: 'goodbye' });
+  const testObject4 = new TestObject(4, { propC: 'hello' });
+
+  let state = {};
+
+  // When
+  const insertAction = DispatchDriver.insertMany([
+    testObject1,
+    testObject2,
+    testObject3,
+    testObject4,
+  ]);
+  state = reducer(state, insertAction);
+
+  const deleteAction = DispatchDriver.deleteOne(TestObject, {
+    propA: x => x > 1,
+    propB: { propC: 'goodbye' },
+  });
+  state = reducer(state, deleteAction);
+
+  const selector = AccessDriver.find(TestObject);
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects).toEqual([testObject1, testObject3, testObject4]);
+});
+
+test('insert objects using insertMany action, then delete multiple with deleteMany using complex filter, then get all remaining with find', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'hello' });
+  const testObject2 = new TestObject(2, { propC: 'goodbye' });
+  const testObject3 = new TestObject(3, { propC: 'goodbye' });
+  const testObject4 = new TestObject(4, { propC: 'hello' });
+
+  let state = {};
+
+  // When
+  const insertAction = DispatchDriver.insertMany([
+    testObject1,
+    testObject2,
+    testObject3,
+    testObject4,
+  ]);
+  state = reducer(state, insertAction);
+
+  const deleteAction = DispatchDriver.deleteMany(TestObject, {
+    propA: x => x > 1,
+    propB: { propC: 'goodbye' },
+  });
+  state = reducer(state, deleteAction);
+
+  const selector = AccessDriver.find(TestObject);
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects).toEqual([testObject1, testObject4]);
+});
