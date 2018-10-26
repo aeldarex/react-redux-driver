@@ -854,6 +854,55 @@ describe('DRIVER_DELETE_ONE action', () => {
               });
             });
 
+            test('and object throws error while running filter functions,item is considered as not matching filter', () => {
+              // Given
+              class TestObject extends ReduxObject {}
+
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
+              const testObject3 = new TestObject();
+              const state = {
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject2.id]: testObject2,
+                  [testObject3.id]: testObject3,
+                },
+              };
+
+              const filter = {};
+
+              const action = {
+                type: DRIVER_DELETE_ONE,
+                payload: {
+                  objectType: TestObject,
+                  filter,
+                },
+              };
+
+              const func1 = () => true;
+              const func2 = (x) => {
+                if (x === testObject2) {
+                  throw new Error();
+                }
+
+                return x === testObject3;
+              };
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1, func2]);
+
+              // When
+              const updatedState = reducer(state, action);
+
+              // Then
+              expect(updatedState).toEqual({
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject2.id]: testObject2,
+                },
+              });
+            });
+
             test('but no matching object, returns given state', () => {
               // Given
               class TestObject extends ReduxObject {}
@@ -1151,6 +1200,54 @@ describe('DRIVER_DELETE_MANY action', () => {
               expect(updatedState).toEqual({
                 [TestObject.stateSlice]: {
                   [testObject1.id]: testObject1,
+                },
+              });
+            });
+
+            test('and object throws error while running filter functions, item is considered as not matching filter', () => {
+              // Given
+              class TestObject extends ReduxObject {}
+
+              const testObject1 = new TestObject();
+              const testObject2 = new TestObject();
+              const testObject3 = new TestObject();
+              const state = {
+                [TestObject.stateSlice]: {
+                  [testObject1.id]: testObject1,
+                  [testObject2.id]: testObject2,
+                  [testObject3.id]: testObject3,
+                },
+              };
+
+              const filter = {};
+
+              const action = {
+                type: DRIVER_DELETE_MANY,
+                payload: {
+                  objectType: TestObject,
+                  filter,
+                },
+              };
+
+              const func1 = () => true;
+              const func2 = (x) => {
+                if (x === testObject2) {
+                  throw new Error();
+                }
+
+                return true;
+              };
+              createFilterFunctionListStub
+                .withArgs(sinon.match.same(filter))
+                .returns([func1, func2]);
+
+              // When
+              const updatedState = reducer(state, action);
+
+              // Then
+              expect(updatedState).toEqual({
+                [TestObject.stateSlice]: {
+                  [testObject2.id]: testObject2,
                 },
               });
             });

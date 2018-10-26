@@ -100,7 +100,13 @@ function deleteOne(state, { objectType, filter }) {
     const filterFunctions = createFilterFunctionList(filter);
 
     const allEntries = Object.entries(currentTable);
-    const entryToDelete = allEntries.find(e => filterFunctions.every(f => f(e[1])));
+    const entryToDelete = allEntries.find((e) => {
+      try {
+        return filterFunctions.every(f => f(e[1]));
+      } catch (_) {
+        return false;
+      }
+    });
 
     if (entryToDelete) {
       const { [entryToDelete[0]]: _, ...itemsToKeep } = currentTable;
@@ -138,7 +144,13 @@ function deleteMany(state, { objectType, filter }) {
     const filterFunctions = createFilterFunctionList(filter);
 
     const allEntries = Object.entries(currentTable);
-    const entriesToDelete = allEntries.filter(e => filterFunctions.every(f => f(e[1])));
+    const entriesToDelete = allEntries.filter((e) => {
+      try {
+        return filterFunctions.every(f => f(e[1]));
+      } catch (_) {
+        return false;
+      }
+    });
 
     if (entriesToDelete.length !== 0) {
       const itemsToKeep = { ...currentTable };
