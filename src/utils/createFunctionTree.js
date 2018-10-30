@@ -13,12 +13,12 @@ function createComparisonFunction(propertyEntry) {
   return x => x[propName] === propValue;
 }
 
-function createFilterFunctionList(filter) {
-  const filterEntries = Object.entries(filter);
-  const filterFunctionList = [];
-  filterEntries.forEach(e => filterFunctionList.push(createComparisonFunction(e)));
+function createFunctionTree(object) {
+  const entries = Object.entries(object);
+  const functionTree = [];
+  entries.forEach(e => functionTree.push(createComparisonFunction(e)));
 
-  return filterFunctionList;
+  return functionTree;
 }
 
-export default createFilterFunctionList;
+export default createFunctionTree;

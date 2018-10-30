@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import warning from 'warning';
 import isReduxObjectType from './utils/isReduxObjectType';
-import createFilterFunctionList from './utils/createFilterFunctionList';
+import createFunctionTree from './utils/createFunctionTree';
 
 const allValuesSelector = slice => (slice ? Object.values(slice) : []);
 
@@ -20,7 +20,7 @@ const AccessDriver = {
     let selector = createSelector(sliceSelector, allValuesSelector);
 
     if (filter) {
-      const filterFunctions = createFilterFunctionList(filter);
+      const filterFunctions = createFunctionTree(filter);
 
       const filterSelector = items => items.filter((i) => {
         try {

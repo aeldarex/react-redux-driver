@@ -1,7 +1,7 @@
 import warning from 'warning';
-import isEmptyObject from '../utils/isEmptyObject';
+import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import createFilterFunctionList from '../utils/createFilterFunctionList';
+import createFunctionTree from '../utils/createFunctionTree';
 
 function deleteOneHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {
@@ -18,7 +18,7 @@ function deleteOneHandler(state, { objectType, filter } = {}) {
 
   const { stateSlice } = objectType;
   const currentTable = state[stateSlice];
-  if (!currentTable || isEmptyObject(currentTable)) {
+  if (!isObjectWithOwnProps(currentTable)) {
     return state;
   }
 
@@ -28,7 +28,7 @@ function deleteOneHandler(state, { objectType, filter } = {}) {
     const { [firstItemKey]: firstItemValue, ...itemsToKeep } = currentTable;
     updatedTable = itemsToKeep;
   } else {
-    const filterFunctions = createFilterFunctionList(filter);
+    const filterFunctions = createFunctionTree(filter);
 
     const allEntries = Object.entries(currentTable);
     const entryToDelete = allEntries.find((e) => {

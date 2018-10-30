@@ -1,4 +1,3 @@
-import ObjectId from 'bson-objectid';
 import ReduxObject from '../src/ReduxObject';
 
 test('stateSlice returns class name + s', () => {
@@ -6,14 +5,6 @@ test('stateSlice returns class name + s', () => {
 });
 
 describe('constructor', () => {
-  test('adds an id field which is an ObjectId', () => {
-    // When
-    const reduxObject = new ReduxObject();
-
-    // Then
-    expect(reduxObject.id).toBeInstanceOf(ObjectId);
-  });
-
   test('adds an id field which is unique', () => {
     // When
     const reduxObject1 = new ReduxObject();

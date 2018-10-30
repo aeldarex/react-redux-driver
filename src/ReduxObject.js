@@ -2,7 +2,7 @@ import ObjectId from 'bson-objectid';
 
 class ReduxObject {
   constructor() {
-    this.id = ObjectId();
+    this.id = ObjectId().toString();
   }
 
   static get stateSlice() {

@@ -1,21 +1,21 @@
 import sinon from 'sinon';
 import AccessDriver from '../src/AccessDriver';
 import ReduxObject from '../src/ReduxObject';
-import * as filterUtils from '../src/utils/createFilterFunctionList';
+import * as filterUtils from '../src/utils/createFunctionTree';
 
 let warningStub;
-let createFilterFunctionListStub;
+let createFunctionTreeStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
 
-  createFilterFunctionListStub = sinon.stub(filterUtils, 'default');
-  createFilterFunctionListStub.returns([]);
+  createFunctionTreeStub = sinon.stub(filterUtils, 'default');
+  createFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
-  createFilterFunctionListStub.restore();
+  createFunctionTreeStub.restore();
 });
 
 describe('find', () => {
@@ -91,7 +91,7 @@ describe('find', () => {
 
         const func1 = () => true;
         const func2 = x => x === testObject2;
-        createFilterFunctionListStub
+        createFunctionTreeStub
           .withArgs(sinon.match.same(filter))
           .returns([func1, func2]);
 
@@ -126,7 +126,7 @@ describe('find', () => {
           return true;
         };
 
-        createFilterFunctionListStub
+        createFunctionTreeStub
           .withArgs(sinon.match.same(filter))
           .returns([func1, func2]);
 

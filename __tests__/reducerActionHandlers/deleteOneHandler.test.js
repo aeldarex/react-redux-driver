@@ -1,21 +1,21 @@
 import sinon from 'sinon';
 import deleteOneHandler from '../../src/reducerActionHandlers/deleteOneHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as filterUtils from '../../src/utils/createFilterFunctionList';
+import * as filterUtils from '../../src/utils/createFunctionTree';
 
 let warningStub;
-let createFilterFunctionListStub;
+let createFunctionTreeStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
 
-  createFilterFunctionListStub = sinon.stub(filterUtils, 'default');
-  createFilterFunctionListStub.returns([]);
+  createFunctionTreeStub = sinon.stub(filterUtils, 'default');
+  createFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
-  createFilterFunctionListStub.restore();
+  createFunctionTreeStub.restore();
 });
 
 test('if state is undefined, produces warning', () => {
@@ -258,7 +258,7 @@ describe('given defined state', () => {
 
             const func1 = () => true;
             const func2 = x => x === testObject2 || x === testObject3;
-            createFilterFunctionListStub
+            createFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 
@@ -277,7 +277,7 @@ describe('given defined state', () => {
             });
           });
 
-          test('and object throws error while running filter functions,item is considered as not matching filter', () => {
+          test('and object throws error while running filter functions, item is considered as not matching filter', () => {
             // Given
             class TestObject extends ReduxObject {}
 
@@ -302,7 +302,7 @@ describe('given defined state', () => {
 
               return x === testObject3;
             };
-            createFilterFunctionListStub
+            createFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 
@@ -338,7 +338,7 @@ describe('given defined state', () => {
 
             const func1 = () => true;
             const func2 = () => false;
-            createFilterFunctionListStub
+            createFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 

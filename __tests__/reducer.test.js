@@ -4,16 +4,19 @@ import {
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
+  DRIVER_UPDATE_ONE,
 } from '../src/actionTypes';
 import * as InsertOneHandlerModule from '../src/reducerActionHandlers/insertOneHandler';
 import * as InsertManyHandlerModule from '../src/reducerActionHandlers/insertManyHandler';
 import * as DeleteOneHandlerModule from '../src/reducerActionHandlers/deleteOneHandler';
 import * as DeleteManyHandlerModule from '../src/reducerActionHandlers/deleteManyHandler';
+import * as UpdateOneHandlerModule from '../src/reducerActionHandlers/updateOneHandler';
 
 let insertOneHandlerStub;
 let insertManyHandlerStub;
 let deleteOneHandlerStub;
 let deleteManyHandlerStub;
+let updateOneHandlerStub;
 let reducer;
 
 beforeAll(() => {
@@ -21,6 +24,7 @@ beforeAll(() => {
   insertManyHandlerStub = sinon.stub(InsertManyHandlerModule, 'default');
   deleteOneHandlerStub = sinon.stub(DeleteOneHandlerModule, 'default');
   deleteManyHandlerStub = sinon.stub(DeleteManyHandlerModule, 'default');
+  updateOneHandlerStub = sinon.stub(UpdateOneHandlerModule, 'default');
 
   // eslint-disable-next-line global-require
   reducer = require('../src/reducer').default;
@@ -31,6 +35,7 @@ afterEach(() => {
   insertManyHandlerStub.reset();
   deleteOneHandlerStub.reset();
   deleteManyHandlerStub.reset();
+  updateOneHandlerStub.reset();
 });
 
 test('given undefined state and unhandled action type reducer returns empty object', () => {
@@ -187,6 +192,39 @@ test('given defined state and DRIVER_DELETE_MANY action, calls deleteManyHandler
 
   // When
   const result = reducer(givenState, { type: DRIVER_DELETE_MANY, payload });
+
+  // Then
+  expect(result).toBe(updatedState);
+});
+
+test('given undefined state and DRIVER_UPDATE_ONE action, calls updateOneHandler with empty object for state and given payload', () => {
+  // Given
+  const payload = {};
+  const updatedState = {};
+
+  updateOneHandlerStub
+    .withArgs({}, sinon.match.same(payload))
+    .returns(updatedState);
+
+  // When
+  const result = reducer(undefined, { type: DRIVER_UPDATE_ONE, payload });
+
+  // Then
+  expect(result).toBe(updatedState);
+});
+
+test('given defined state and DRIVER_UPDATE_ONE action, calls updateOneHandler with given state and payload', () => {
+  // Given
+  const givenState = {};
+  const payload = {};
+  const updatedState = {};
+
+  updateOneHandlerStub
+    .withArgs(sinon.match.same(givenState), sinon.match.same(payload))
+    .returns(updatedState);
+
+  // When
+  const result = reducer(givenState, { type: DRIVER_UPDATE_ONE, payload });
 
   // Then
   expect(result).toBe(updatedState);
