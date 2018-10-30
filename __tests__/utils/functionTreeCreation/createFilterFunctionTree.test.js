@@ -1,11 +1,11 @@
-import createFunctionTree from '../../src/utils/createFunctionTree';
+import createFilterFunctionTree from '../../../src/utils/functionTreeCreation/createFilterFunctionTree';
 
 test('if object is specified with primitive, created function tree returns true for input objects which match with ===', () => {
   // Given
   const obj1 = { propA: 5 };
 
   // When
-  const functionList = createFunctionTree({ propA: 5 });
+  const functionList = createFilterFunctionTree({ propA: 5 });
   const result = functionList.every(f => f(obj1));
 
   // Then
@@ -17,7 +17,7 @@ test('if object is specified with primitive, created function tree returns false
   const obj1 = { propA: '5' };
 
   // When
-  const functionList = createFunctionTree({ propA: 5 });
+  const functionList = createFilterFunctionTree({ propA: 5 });
   const result = functionList.every(f => f(obj1));
 
   // Then
@@ -29,7 +29,7 @@ test('if object is specified with function, created function tree returns true f
   const obj1 = { propA: 5 };
 
   // When
-  const functionList = createFunctionTree({ propA: x => x > 2 });
+  const functionList = createFilterFunctionTree({ propA: x => x > 2 });
   const result = functionList.every(f => f(obj1));
 
   // Then
@@ -41,7 +41,7 @@ test('if object is specified with function, created function tree returns false 
   const obj1 = { propA: 1 };
 
   // When
-  const functionList = createFunctionTree({ propA: x => x > 2 });
+  const functionList = createFilterFunctionTree({ propA: x => x > 2 });
   const result = functionList.every(f => f(obj1));
 
   // Then
@@ -58,7 +58,7 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFunctionTree({
+  const functionList = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
@@ -78,7 +78,7 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFunctionTree({
+  const functionList = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
@@ -98,7 +98,7 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFunctionTree({
+  const functionList = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
@@ -118,7 +118,7 @@ test('if object contains nulls, created function tree returns true for input obj
   };
 
   // When
-  const functionList = createFunctionTree({
+  const functionList = createFilterFunctionTree({
     propA: 5,
     propB: { propC: null },
   });
@@ -138,7 +138,7 @@ test('if object contains nulls, created function tree returns false for input ob
   };
 
   // When
-  const functionList = createFunctionTree({
+  const functionList = createFilterFunctionTree({
     propA: 5,
     propB: { propC: null },
   });

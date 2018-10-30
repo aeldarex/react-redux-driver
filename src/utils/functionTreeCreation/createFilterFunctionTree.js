@@ -1,4 +1,4 @@
-function createComparisonFunction(propertyEntry) {
+function createFunctionBranch(propertyEntry) {
   const propName = propertyEntry[0];
   const propValue = propertyEntry[1];
 
@@ -6,19 +6,20 @@ function createComparisonFunction(propertyEntry) {
     return x => propValue(x[propName]);
   }
   if (propValue && typeof propValue === 'object') {
-    const childrenFunctions = Object.entries(propValue).map(e => createComparisonFunction(e));
+    const childrenFunctions = Object.entries(propValue).map(e => createFunctionBranch(e));
     return x => childrenFunctions.every(f => f(x[propName]));
   }
 
   return x => x[propName] === propValue;
 }
 
-function createFunctionTree(object) {
-  const entries = Object.entries(object);
+function createFilterFunctionTree(filter) {
+  const entries = Object.entries(filter);
+
   const functionTree = [];
-  entries.forEach(e => functionTree.push(createComparisonFunction(e)));
+  entries.forEach(e => functionTree.push(createFunctionBranch(e)));
 
   return functionTree;
 }
 
-export default createFunctionTree;
+export default createFilterFunctionTree;

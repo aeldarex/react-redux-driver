@@ -1,21 +1,21 @@
 import sinon from 'sinon';
 import deleteManyHandler from '../../src/reducerActionHandlers/deleteManyHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as filterUtils from '../../src/utils/createFunctionTree';
+import * as filterUtils from '../../src/utils/functionTreeCreation/createFilterFunctionTree';
 
 let warningStub;
-let createFunctionTreeStub;
+let createFilterFunctionTreeStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
 
-  createFunctionTreeStub = sinon.stub(filterUtils, 'default');
-  createFunctionTreeStub.returns([]);
+  createFilterFunctionTreeStub = sinon.stub(filterUtils, 'default');
+  createFilterFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
-  createFunctionTreeStub.restore();
+  createFilterFunctionTreeStub.restore();
 });
 
 test('if state is undefined, produces warning', () => {
@@ -250,7 +250,7 @@ describe('given defined state', () => {
 
             const func1 = () => true;
             const func2 = x => x === testObject2 || x === testObject3;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 
@@ -293,7 +293,7 @@ describe('given defined state', () => {
 
               return true;
             };
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 
@@ -328,7 +328,7 @@ describe('given defined state', () => {
 
             const func1 = () => true;
             const func2 = () => false;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(sinon.match.same(filter))
               .returns([func1, func2]);
 

@@ -1,7 +1,7 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import createFunctionTree from '../utils/createFunctionTree';
+import { createFilterFunctionTree } from '../utils/functionTreeCreation';
 
 function deleteManyHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {
@@ -26,7 +26,7 @@ function deleteManyHandler(state, { objectType, filter } = {}) {
   if (!filter) {
     updatedTable = {};
   } else {
-    const filterFunctions = createFunctionTree(filter);
+    const filterFunctions = createFilterFunctionTree(filter);
 
     const allEntries = Object.entries(currentTable);
     const entriesToDelete = allEntries.filter((e) => {

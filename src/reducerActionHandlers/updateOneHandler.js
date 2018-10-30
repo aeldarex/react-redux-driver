@@ -1,7 +1,10 @@
 import warning from 'warning';
 import isReduxObjectType from '../utils/isReduxObjectType';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
-import createFunctionTree from '../utils/createFunctionTree';
+import {
+  createFilterFunctionTree,
+  createUpdateFunctionTree,
+} from '../utils/functionTreeCreation';
 
 function updateOne(state, { objectType, filter, update } = {}) {
   if (
@@ -32,7 +35,7 @@ function updateOne(state, { objectType, filter, update } = {}) {
 
   let updatedTable;
   if (!filter) {
-    const updateFunctions = createFunctionTree(update);
+    const updateFunctions = createUpdateFunctionTree(update);
 
     const firstItem = Object.values(currentTable)[0];
 
@@ -41,7 +44,7 @@ function updateOne(state, { objectType, filter, update } = {}) {
 
     updatedTable = { ...currentTable, [itemCopy.id]: itemCopy };
   } else {
-    const filterFunctions = createFunctionTree(filter);
+    const filterFunctions = createFilterFunctionTree(filter);
 
     const allObjects = Object.values(currentTable);
     const objectToUpdate = allObjects.find((x) => {
@@ -56,7 +59,7 @@ function updateOne(state, { objectType, filter, update } = {}) {
       return state;
     }
 
-    const updateFunctions = createFunctionTree(update);
+    const updateFunctions = createUpdateFunctionTree(update);
 
     const itemCopy = JSON.parse(JSON.stringify(objectToUpdate));
     try {

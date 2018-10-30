@@ -3,21 +3,33 @@
 import sinon from 'sinon';
 import updateOneHandler from '../../src/reducerActionHandlers/updateOneHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as filterUtils from '../../src/utils/createFunctionTree';
+import * as CreateFilterFunctionTreeModule from '../../src/utils/functionTreeCreation/createFilterFunctionTree';
+import * as CreateUpdateFunctionTreeModule from '../../src/utils/functionTreeCreation/createUpdateFunctionTree';
 
 let warningStub;
-let createFunctionTreeStub;
+let createFilterFunctionTreeStub;
+let createUpdateFunctionTreeStub;
 
 beforeEach(() => {
   warningStub = sinon.stub(console, 'error');
 
-  createFunctionTreeStub = sinon.stub(filterUtils, 'default');
-  createFunctionTreeStub.returns([]);
+  createFilterFunctionTreeStub = sinon.stub(
+    CreateFilterFunctionTreeModule,
+    'default',
+  );
+  createFilterFunctionTreeStub.returns([]);
+
+  createUpdateFunctionTreeStub = sinon.stub(
+    CreateUpdateFunctionTreeModule,
+    'default',
+  );
+  createUpdateFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
   warningStub.restore();
-  createFunctionTreeStub.restore();
+  createFilterFunctionTreeStub.restore();
+  createUpdateFunctionTreeStub.restore();
 });
 
 test('if state is undefined, produces warning', () => {
@@ -312,7 +324,9 @@ describe('given defined state', () => {
             const func2 = (x) => {
               x.propB *= 2;
             };
-            createFunctionTreeStub.withArgs(update).returns([func1, func2]);
+            createUpdateFunctionTreeStub
+              .withArgs(update)
+              .returns([func1, func2]);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -356,7 +370,9 @@ describe('given defined state', () => {
             const func2 = (x) => {
               x.propB *= 2;
             };
-            createFunctionTreeStub.withArgs(update).returns([func1, func2]);
+            createUpdateFunctionTreeStub
+              .withArgs(update)
+              .returns([func1, func2]);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -394,7 +410,7 @@ describe('given defined state', () => {
             const filter = { propA: 2, propB: 20 };
             const filterFunc1 = x => x.propA === 2;
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -405,7 +421,7 @@ describe('given defined state', () => {
             const updateFunc2 = (x) => {
               x.propB *= 3;
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -447,7 +463,7 @@ describe('given defined state', () => {
             const filter = { propA: 2, propB: 20 };
             const filterFunc1 = x => x.propA === 2;
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -458,7 +474,7 @@ describe('given defined state', () => {
             const updateFunc2 = (x) => {
               x.propB *= 3;
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -497,7 +513,7 @@ describe('given defined state', () => {
             const filter = { propA: 2, propB: 20 };
             const filterFunc1 = x => x.propA === 2;
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -508,7 +524,7 @@ describe('given defined state', () => {
             const updateFunc2 = (x) => {
               x.propB *= 3;
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -552,7 +568,7 @@ describe('given defined state', () => {
               return x.propA === 2;
             };
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -563,7 +579,7 @@ describe('given defined state', () => {
             const updateFunc2 = (x) => {
               x.propB *= 3;
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -605,7 +621,7 @@ describe('given defined state', () => {
             const filter = { propA: 2, propB: 20 };
             const filterFunc1 = x => x.propA === 2;
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -616,7 +632,7 @@ describe('given defined state', () => {
             const updateFunc2 = () => {
               throw new Error();
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -653,7 +669,7 @@ describe('given defined state', () => {
             const filter = { propA: 2, propB: 20 };
             const filterFunc1 = x => x.propA === 2;
             const filterFunc2 = x => x.propB === 20;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -664,7 +680,7 @@ describe('given defined state', () => {
             const updateFunc2 = () => {
               throw new Error('Invalid update call.');
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 
@@ -707,7 +723,7 @@ describe('given defined state', () => {
             const filter = { propA: 3, propB: 30 };
             const filterFunc1 = x => x.propA === 3;
             const filterFunc2 = x => x.propB === 30;
-            createFunctionTreeStub
+            createFilterFunctionTreeStub
               .withArgs(filter)
               .returns([filterFunc1, filterFunc2]);
 
@@ -718,7 +734,7 @@ describe('given defined state', () => {
             const updateFunc2 = (x) => {
               x.propB *= 4;
             };
-            createFunctionTreeStub
+            createUpdateFunctionTreeStub
               .withArgs(update)
               .returns([updateFunc1, updateFunc2]);
 

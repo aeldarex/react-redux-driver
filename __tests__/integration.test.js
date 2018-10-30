@@ -247,3 +247,54 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject4]);
 });
+
+test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with find', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'good afternoon' });
+  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
+  const testObject3 = new TestObject(3, { propC: 'good afternoon' });
+
+  let state = {};
+
+  // When
+  const insertAction = DispatchDriver.insertMany([
+    testObject1,
+    testObject2,
+    testObject3,
+  ]);
+  state = reducer(state, insertAction);
+
+  const updateAction = DispatchDriver.updateOne(
+    TestObject,
+    {
+      propA: x => x > 1,
+      propB: { propC: 'good afternoon' },
+    },
+    {
+      propA: 4,
+      propB: { propC: x => x.concat(' and night') },
+    },
+  );
+  state = reducer(state, updateAction);
+
+  const selector = AccessDriver.find(TestObject, { id: testObject2.id });
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects.length).toBe(1);
+  expect(locatedObjects[0]).toEqual({
+    id: testObject2.id,
+    propA: 4,
+    propB: {
+      propC: 'good afternoon and night',
+    },
+  });
+});
