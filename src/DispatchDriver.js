@@ -3,6 +3,7 @@ import {
   DRIVER_INSERT_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
+  DRIVER_UPDATE_ONE,
 } from './actionTypes';
 
 const DispatchDriver = {
@@ -17,6 +18,13 @@ const DispatchDriver = {
     return {
       type: DRIVER_INSERT_MANY,
       payload: items,
+    };
+  },
+
+  updateOne(objectType, filter, update) {
+    return {
+      type: DRIVER_UPDATE_ONE,
+      payload: { objectType, filter, update },
     };
   },
 
