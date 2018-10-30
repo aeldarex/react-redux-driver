@@ -43,35 +43,36 @@ function updateOne(state, { objectType, filter, update } = {}) {
   } else {
     const filterFunctions = createFunctionTree(filter);
 
-    const allEntries = Object.entries(currentTable);
-    const entryToUpdate = allEntries.find((e) => {
+    const allObjects = Object.values(currentTable);
+    const objectToUpdate = allObjects.find((x) => {
       try {
-        return filterFunctions.every(f => f(e[1]));
+        return filterFunctions.every(f => f(x));
       } catch (_) {
         return false;
       }
     });
 
-    if (!entryToUpdate) {
+    if (!objectToUpdate) {
       return state;
     }
 
     const updateFunctions = createFunctionTree(update);
 
-    const itemCopy = JSON.parse(JSON.stringify(entryToUpdate[1]));
+    const itemCopy = JSON.parse(JSON.stringify(objectToUpdate));
     try {
       updateFunctions.forEach(f => f(itemCopy));
     } catch (e) {
       warning(
         false,
-        `Failed to update ${entryToUpdate[1].constructor.name} with id ${
+        `Failed to update ${objectToUpdate.constructor.name} with id ${
           itemCopy.id
         } due to the following error: ${e}`,
       );
       return state;
     }
 
-    updatedTable = { ...currentTable, [itemCopy.id]: itemCopy };
+    const newObject = Object.assign(new objectToUpdate.constructor(), itemCopy);
+    updatedTable = { ...currentTable, [newObject.id]: newObject };
   }
 
   return {

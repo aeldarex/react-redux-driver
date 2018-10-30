@@ -425,6 +425,106 @@ describe('given defined state', () => {
             });
           });
 
+          test('and matching item is found, updated item is a new object', () => {
+            // Given
+            class TestObject extends ReduxObject {
+              constructor(propA, propB) {
+                super();
+                this.propA = propA;
+                this.propB = propB;
+              }
+            }
+
+            const testObject1 = new TestObject(1, 10);
+            const testObject2 = new TestObject(2, 20);
+            const existingState = {
+              [TestObject.stateSlice]: {
+                [testObject1.id]: testObject1,
+                [testObject2.id]: testObject2,
+              },
+            };
+
+            const filter = { propA: 2, propB: 20 };
+            const filterFunc1 = x => x.propA === 2;
+            const filterFunc2 = x => x.propB === 20;
+            createFunctionTreeStub
+              .withArgs(filter)
+              .returns([filterFunc1, filterFunc2]);
+
+            const update = { propA: 6, propB: x => x * 3 };
+            const updateFunc1 = (x) => {
+              x.propA = 6;
+            };
+            const updateFunc2 = (x) => {
+              x.propB *= 3;
+            };
+            createFunctionTreeStub
+              .withArgs(update)
+              .returns([updateFunc1, updateFunc2]);
+
+            // When
+            const updatedState = updateOneHandler(existingState, {
+              objectType: TestObject,
+              filter,
+              update,
+            });
+
+            // Then
+            expect(
+              updatedState[TestObject.stateSlice][testObject2.id],
+            ).not.toBe(testObject2);
+          });
+
+          test('and matching item is found, updated item is an instance of a ReduxObject', () => {
+            // Given
+            class TestObject extends ReduxObject {
+              constructor(propA, propB) {
+                super();
+                this.propA = propA;
+                this.propB = propB;
+              }
+            }
+
+            const testObject1 = new TestObject(1, 10);
+            const testObject2 = new TestObject(2, 20);
+            const existingState = {
+              [TestObject.stateSlice]: {
+                [testObject1.id]: testObject1,
+                [testObject2.id]: testObject2,
+              },
+            };
+
+            const filter = { propA: 2, propB: 20 };
+            const filterFunc1 = x => x.propA === 2;
+            const filterFunc2 = x => x.propB === 20;
+            createFunctionTreeStub
+              .withArgs(filter)
+              .returns([filterFunc1, filterFunc2]);
+
+            const update = { propA: 6, propB: x => x * 3 };
+            const updateFunc1 = (x) => {
+              x.propA = 6;
+            };
+            const updateFunc2 = (x) => {
+              x.propB *= 3;
+            };
+            createFunctionTreeStub
+              .withArgs(update)
+              .returns([updateFunc1, updateFunc2]);
+
+            // When
+            const updatedState = updateOneHandler(existingState, {
+              objectType: TestObject,
+              filter,
+              update,
+            });
+
+            // Then
+            expect(
+              updatedState[TestObject.stateSlice][testObject2.id],
+            ).toBeInstanceOf(ReduxObject);
+          });
+
           test('and item throws error during filtration, item is ignored', () => {
             // Given
             class TestObject extends ReduxObject {
