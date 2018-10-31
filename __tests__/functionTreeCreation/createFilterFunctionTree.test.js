@@ -1,4 +1,4 @@
-import createFilterFunctionTree from '../../../src/utils/functionTreeCreation/createFilterFunctionTree';
+import createFilterFunctionTree from '../../src/functionTreeCreation/createFilterFunctionTree';
 
 test('if object is specified with primitive, created function tree returns true for input objects which match with ===', () => {
   // Given

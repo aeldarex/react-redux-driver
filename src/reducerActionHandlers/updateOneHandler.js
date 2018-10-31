@@ -1,8 +1,7 @@
 import warning from 'warning';
 import isReduxObjectType from '../utils/isReduxObjectType';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
-import { filterOne } from '../utils/filtering';
-import { updateOne } from '../utils/updating';
+import { filterOne, updateOne } from '../sliceInteraction';
 
 function updateOneHandler(state, { objectType, filter, update } = {}) {
   if (

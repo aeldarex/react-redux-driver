@@ -1,4 +1,4 @@
-import createUpdateFunctionTree from '../../../src/utils/functionTreeCreation/createUpdateFunctionTree';
+import createUpdateFunctionTree from '../../src/functionTreeCreation/createUpdateFunctionTree';
 
 test('if object is specified with primitive, created function tree sets property of given object to value', () => {
   // Given

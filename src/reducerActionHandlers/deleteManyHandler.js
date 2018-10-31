@@ -1,7 +1,7 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import { filterMany } from '../utils/filtering';
+import { filterMany } from '../sliceInteraction';
 
 function deleteManyHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {

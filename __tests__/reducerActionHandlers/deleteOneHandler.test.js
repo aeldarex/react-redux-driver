@@ -1,14 +1,17 @@
 import sinon from 'sinon';
 import deleteOneHandler from '../../src/reducerActionHandlers/deleteOneHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as filterUtils from '../../src/utils/functionTreeCreation/createFilterFunctionTree';
+import * as CreateFilterFunctionTreeModule from '../../src/functionTreeCreation/createFilterFunctionTree';
 
 let errorStub;
 let createFilterFunctionTreeStub;
 
 beforeAll(() => {
   errorStub = sinon.stub(console, 'error');
-  createFilterFunctionTreeStub = sinon.stub(filterUtils, 'default');
+  createFilterFunctionTreeStub = sinon.stub(
+    CreateFilterFunctionTreeModule,
+    'default',
+  );
 });
 
 afterEach(() => {

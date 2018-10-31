@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect';
 import warning from 'warning';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import { createFilterFunctionTree } from '../utils/functionTreeCreation';
+import { createFilterFunctionTree } from '../functionTreeCreation';
 import createSliceSelector from './createSliceSelector';
 import allValuesSelector from './basicSelectors/allValuesSelector';
 

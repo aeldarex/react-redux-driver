@@ -3,8 +3,8 @@
 import sinon from 'sinon';
 import updateOneHandler from '../../src/reducerActionHandlers/updateOneHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as FilterOneModule from '../../src/utils/filtering/filterOne';
-import * as UpdateOneModule from '../../src/utils/updating/updateOne';
+import * as FilterOneModule from '../../src/sliceInteraction/filterOne';
+import * as UpdateOneModule from '../../src/sliceInteraction/updateOne';
 
 let errorStub;
 let filterOneStub;
