@@ -1,7 +1,7 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import { createFilterFunctionTree } from '../utils/functionTreeCreation';
+import { filterMany } from './handlerUtils';
 
 function deleteManyHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {
@@ -26,24 +26,16 @@ function deleteManyHandler(state, { objectType, filter } = {}) {
   if (!filter) {
     updatedTable = {};
   } else {
-    const filterFunctions = createFilterFunctionTree(filter);
+    const itemsToDelete = filterMany(currentTable, filter);
 
-    const allEntries = Object.entries(currentTable);
-    const entriesToDelete = allEntries.filter((e) => {
-      try {
-        return filterFunctions.every(f => f(e[1]));
-      } catch (_) {
-        return false;
-      }
-    });
-
-    if (entriesToDelete.length !== 0) {
-      const itemsToKeep = { ...currentTable };
-      entriesToDelete.forEach(e => delete itemsToKeep[e[0]]);
-      updatedTable = itemsToKeep;
-    } else {
-      return state;
+    if (itemsToDelete.length !== 0) {
+      updatedTable = { ...currentTable };
+      itemsToDelete.forEach(e => delete updatedTable[e.id]);
     }
+  }
+
+  if (!updatedTable) {
+    return state;
   }
 
   return {

@@ -1,12 +1,9 @@
 import warning from 'warning';
 import isReduxObjectType from '../utils/isReduxObjectType';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
-import {
-  createFilterFunctionTree,
-  createUpdateFunctionTree,
-} from '../utils/functionTreeCreation';
+import { filterOne, updateOne } from './handlerUtils';
 
-function updateOne(state, { objectType, filter, update } = {}) {
+function updateOneHandler(state, { objectType, filter, update } = {}) {
   if (
     !state
     || !isReduxObjectType(objectType)
@@ -33,55 +30,25 @@ function updateOne(state, { objectType, filter, update } = {}) {
     return state;
   }
 
-  let updatedTable;
+  let newItem;
   if (!filter) {
-    const updateFunctions = createUpdateFunctionTree(update);
-
     const firstItem = Object.values(currentTable)[0];
-
-    const itemCopy = JSON.parse(JSON.stringify(firstItem));
-    updateFunctions.forEach(f => f(itemCopy));
-
-    updatedTable = { ...currentTable, [itemCopy.id]: itemCopy };
+    newItem = updateOne(firstItem, update);
   } else {
-    const filterFunctions = createFilterFunctionTree(filter);
-
-    const allObjects = Object.values(currentTable);
-    const objectToUpdate = allObjects.find((x) => {
-      try {
-        return filterFunctions.every(f => f(x));
-      } catch (_) {
-        return false;
-      }
-    });
-
-    if (!objectToUpdate) {
-      return state;
+    const itemToUpdate = filterOne(currentTable, filter);
+    if (itemToUpdate) {
+      newItem = updateOne(itemToUpdate, update);
     }
+  }
 
-    const updateFunctions = createUpdateFunctionTree(update);
-
-    const itemCopy = JSON.parse(JSON.stringify(objectToUpdate));
-    try {
-      updateFunctions.forEach(f => f(itemCopy));
-    } catch (e) {
-      warning(
-        false,
-        `Failed to update ${objectToUpdate.constructor.name} with id ${
-          itemCopy.id
-        } due to the following error: ${e}`,
-      );
-      return state;
-    }
-
-    const newObject = Object.assign(new objectToUpdate.constructor(), itemCopy);
-    updatedTable = { ...currentTable, [newObject.id]: newObject };
+  if (!newItem) {
+    return state;
   }
 
   return {
     ...state,
-    [stateSlice]: updatedTable,
+    [stateSlice]: { ...currentTable, [newItem.id]: newItem },
   };
 }
 
-export default updateOne;
+export default updateOneHandler;

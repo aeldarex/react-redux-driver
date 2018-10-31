@@ -1,7 +1,7 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import { createFilterFunctionTree } from '../utils/functionTreeCreation';
+import { filterOne } from './handlerUtils';
 
 function deleteOneHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {
@@ -22,34 +22,19 @@ function deleteOneHandler(state, { objectType, filter } = {}) {
     return state;
   }
 
-  let updatedTable;
-  if (!filter) {
-    const firstItemKey = Object.keys(currentTable)[0];
-    const { [firstItemKey]: firstItemValue, ...itemsToKeep } = currentTable;
-    updatedTable = itemsToKeep;
-  } else {
-    const filterFunctions = createFilterFunctionTree(filter);
+  const itemToDelete = filter
+    ? filterOne(currentTable, filter)
+    : Object.values(currentTable)[0];
 
-    const allEntries = Object.entries(currentTable);
-    const entryToDelete = allEntries.find((e) => {
-      try {
-        return filterFunctions.every(f => f(e[1]));
-      } catch (_) {
-        return false;
-      }
-    });
-
-    if (entryToDelete) {
-      const { [entryToDelete[0]]: _, ...itemsToKeep } = currentTable;
-      updatedTable = itemsToKeep;
-    } else {
-      return state;
-    }
+  if (!itemToDelete) {
+    return state;
   }
+
+  const { [itemToDelete.id]: _, ...itemsToKeep } = currentTable;
 
   return {
     ...state,
-    [stateSlice]: updatedTable,
+    [stateSlice]: itemsToKeep,
   };
 }
 
