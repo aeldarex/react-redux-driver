@@ -1,38 +1,8 @@
-import { createSelector } from 'reselect';
-import warning from 'warning';
-import isReduxObjectType from './utils/isReduxObjectType';
-import { createFilterFunctionTree } from './utils/functionTreeCreation';
-
-const allValuesSelector = slice => (slice ? Object.values(slice) : []);
-
-function createSliceSelector(stateSlice) {
-  return state => (state[stateSlice] ? state[stateSlice] : {});
-}
+import createFindManySelector from './selectorCreation/createFindManySelector';
 
 const AccessDriver = {
   find(objectType, filter) {
-    warning(
-      isReduxObjectType(objectType),
-      'To create a working selector objectType must extend ReduxObject.',
-    );
-
-    const sliceSelector = createSliceSelector(objectType.stateSlice);
-    let selector = createSelector(sliceSelector, allValuesSelector);
-
-    if (filter) {
-      const functionTree = createFilterFunctionTree(filter);
-
-      const filterSelector = items => items.filter((i) => {
-        try {
-          return functionTree(i);
-        } catch (e) {
-          return false;
-        }
-      });
-      selector = createSelector(selector, filterSelector);
-    }
-
-    return selector;
+    return createFindManySelector(objectType, filter);
   },
 };
 
