@@ -1,24 +1,5 @@
-/* eslint no-param-reassign: 0 */
-
 import sinon from 'sinon';
-import * as CreateUpdateFunctionTreeModules from '../../src/functionTreeCreation/createUpdateFunctionTree';
 import updateOne from '../../src/sliceInteraction/updateOne';
-
-let errorStub;
-let createUpdateFunctionTreeStub;
-
-beforeAll(() => {
-  errorStub = sinon.stub(console, 'error');
-  createUpdateFunctionTreeStub = sinon.stub(
-    CreateUpdateFunctionTreeModules,
-    'default',
-  );
-});
-
-afterEach(() => {
-  errorStub.reset();
-  createUpdateFunctionTreeStub.reset();
-});
 
 test('returns copy of given item with updates applied', () => {
   // Given
@@ -28,15 +9,8 @@ test('returns copy of given item with updates applied', () => {
   obj1.propA = 10;
   obj1.propB = { propC: 5 };
 
-  const functionTree = sinon.fake((x) => {
-    x.propA = 5;
-  });
-
-  const update = { propA: 5 };
-  createUpdateFunctionTreeStub.withArgs(update).returns(functionTree);
-
   // When
-  const result = updateOne(obj1, update);
+  const result = updateOne(obj1, { propA: 5 });
 
   // Then
   expect(result).not.toBe(obj1);
@@ -44,44 +18,46 @@ test('returns copy of given item with updates applied', () => {
   expect(result).toEqual({ propA: 5, propB: { propC: 5 } });
 });
 
-test('if function tree fails update with error produces warning', () => {
-  // Given
-  const obj1 = { propA: 10 };
+describe('if function tree fails update with error', () => {
+  let errorStub;
 
-  const functionTree = sinon.fake(() => {
-    throw new Error();
+  beforeAll(() => {
+    errorStub = sinon.stub(console, 'error');
   });
 
-  const update = { propA: 5 };
-  createUpdateFunctionTreeStub.withArgs(update).returns(functionTree);
-
-  // When
-  updateOne(obj1, update);
-
-  // Then
-  expect(
-    errorStub.calledWith(
-      `Warning: Failed to update ${JSON.stringify(
-        obj1,
-      )} due to the following error: Error`,
-    ),
-  ).toBe(true);
-});
-
-test('if function tree fails update with error returns null', () => {
-  // Given
-  const obj1 = {};
-
-  const functionTree = sinon.fake(() => {
-    throw new Error();
+  afterEach(() => {
+    errorStub.reset();
   });
 
-  const update = { propA: 5 };
-  createUpdateFunctionTreeStub.withArgs(update).returns(functionTree);
+  afterAll(() => {
+    errorStub.restore();
+  });
 
-  // When
-  const result = updateOne(obj1, update);
+  test('if function tree fails update with error produces warning', () => {
+    // Given
+    const obj1 = { propA: 10 };
 
-  // Then
-  expect(result).toBeNull();
+    // When
+    updateOne(obj1, { propA: x => x.concat('or more') });
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        `Warning: Failed to update ${JSON.stringify(
+          obj1,
+        )} due to the following error: TypeError: x.concat is not a function`,
+      ),
+    ).toBe(true);
+  });
+
+  test('if function tree fails update with error returns null', () => {
+    // Given
+    const obj1 = { propA: 10 };
+
+    // When
+    const result = updateOne(obj1, { propA: x => x.concat('or more') });
+
+    // Then
+    expect(result).toBeNull();
+  });
 });
