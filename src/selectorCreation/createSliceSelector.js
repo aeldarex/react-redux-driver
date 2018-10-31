@@ -1,5 +1,5 @@
-function createSliceSelector(stateSlice) {
-  return state => (state[stateSlice] ? state[stateSlice] : {});
+function createSliceSelector(sliceName) {
+  return state => (state[sliceName] ? state[sliceName] : {});
 }
 
 export default createSliceSelector;

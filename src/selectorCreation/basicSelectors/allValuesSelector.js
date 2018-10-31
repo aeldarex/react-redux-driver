@@ -1,3 +1,3 @@
-const allValuesSelector = slice => (slice ? Object.values(slice) : []);
+const allValuesSelector = object => (object ? Object.values(object) : []);
 
 export default allValuesSelector;
