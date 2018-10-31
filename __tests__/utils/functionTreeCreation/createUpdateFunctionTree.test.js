@@ -5,8 +5,8 @@ test('if object is specified with primitive, created function tree sets property
   const obj1 = { propA: 1 };
 
   // When
-  const functionList = createUpdateFunctionTree({ propA: 5 });
-  functionList.forEach(f => f(obj1));
+  const functionTree = createUpdateFunctionTree({ propA: 5 });
+  functionTree(obj1);
 
   // Then
   expect(obj1).toEqual({
@@ -19,8 +19,8 @@ test('if object is specified with function, created function tree applies functi
   const obj1 = { propA: 5 };
 
   // When
-  const functionList = createUpdateFunctionTree({ propA: x => x + 1 });
-  functionList.forEach(f => f(obj1));
+  const functionTree = createUpdateFunctionTree({ propA: x => x + 1 });
+  functionTree(obj1);
 
   // Then
   expect(obj1).toEqual({
@@ -38,11 +38,11 @@ test('if object is specified with depth greater than 1, created function tree ap
   };
 
   // When
-  const functionList = createUpdateFunctionTree({
+  const functionTree = createUpdateFunctionTree({
     propA: 10,
     propB: { propC: x => x.concat('!') },
   });
-  functionList.forEach(f => f(obj1));
+  functionTree(obj1);
 
   // Then
   expect(obj1).toEqual({
@@ -61,11 +61,11 @@ test('if object contains nulls, created function tree applies nulls to given obj
   };
 
   // When
-  const functionList = createUpdateFunctionTree({
+  const functionTree = createUpdateFunctionTree({
     propA: '8',
     propB: { propC: null },
   });
-  functionList.forEach(f => f(obj1));
+  functionTree(obj1);
 
   // Then
   expect(obj1).toEqual({

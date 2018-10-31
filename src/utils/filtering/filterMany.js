@@ -1,12 +1,12 @@
-import { createFilterFunctionTree } from '../../utils/functionTreeCreation';
+import { createFilterFunctionTree } from '../functionTreeCreation';
 
 function filterMany(table, filter) {
-  const filterFunctions = createFilterFunctionTree(filter);
+  const functionTree = createFilterFunctionTree(filter);
 
   const allObjects = Object.values(table);
   return allObjects.filter((x) => {
     try {
-      return filterFunctions.every(f => f(x));
+      return functionTree(x);
     } catch (_) {
       return false;
     }

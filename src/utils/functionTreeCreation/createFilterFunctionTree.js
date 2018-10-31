@@ -19,7 +19,7 @@ function createFilterFunctionTree(filter) {
   const functionTree = [];
   entries.forEach(e => functionTree.push(createFunctionBranch(e)));
 
-  return functionTree;
+  return x => functionTree.every(f => f(x));
 }
 
 export default createFilterFunctionTree;

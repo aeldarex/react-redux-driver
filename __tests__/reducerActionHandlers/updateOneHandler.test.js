@@ -3,33 +3,24 @@
 import sinon from 'sinon';
 import updateOneHandler from '../../src/reducerActionHandlers/updateOneHandler';
 import ReduxObject from '../../src/ReduxObject';
-import * as CreateFilterFunctionTreeModule from '../../src/utils/functionTreeCreation/createFilterFunctionTree';
-import * as CreateUpdateFunctionTreeModule from '../../src/utils/functionTreeCreation/createUpdateFunctionTree';
+import * as FilterOneModule from '../../src/utils/filtering/filterOne';
+import * as UpdateOneModule from '../../src/utils/updating/updateOne';
 
-let warningStub;
-let createFilterFunctionTreeStub;
-let createUpdateFunctionTreeStub;
+let errorStub;
+let filterOneStub;
+let updateOneStub;
 
-beforeEach(() => {
-  warningStub = sinon.stub(console, 'error');
+beforeAll(() => {
+  errorStub = sinon.stub(console, 'error');
 
-  createFilterFunctionTreeStub = sinon.stub(
-    CreateFilterFunctionTreeModule,
-    'default',
-  );
-  createFilterFunctionTreeStub.returns([]);
-
-  createUpdateFunctionTreeStub = sinon.stub(
-    CreateUpdateFunctionTreeModule,
-    'default',
-  );
-  createUpdateFunctionTreeStub.returns([]);
+  filterOneStub = sinon.stub(FilterOneModule, 'default');
+  updateOneStub = sinon.stub(UpdateOneModule, 'default');
 });
 
 afterEach(() => {
-  warningStub.restore();
-  createFilterFunctionTreeStub.restore();
-  createUpdateFunctionTreeStub.restore();
+  errorStub.reset();
+  filterOneStub.reset();
+  updateOneStub.reset();
 });
 
 test('if state is undefined, produces warning', () => {
@@ -38,7 +29,7 @@ test('if state is undefined, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       'Warning: A DRIVER_UPDATE_ONE action was ignored because the given state was null or undefined.',
     ),
   ).toBe(true);
@@ -58,7 +49,7 @@ test('if state is null, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       'Warning: A DRIVER_UPDATE_ONE action was ignored because the given state was null or undefined.',
     ),
   ).toBe(true);
@@ -78,7 +69,7 @@ test('if payload objectType is undefined, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
     ),
   ).toBe(true);
@@ -90,7 +81,7 @@ test('if payload objectType is object which does not extend ReduxObject, produce
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
     ),
   ).toBe(true);
@@ -102,7 +93,7 @@ test('if payload update is undefined, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
     ),
   ).toBe(true);
@@ -114,7 +105,7 @@ test('if payload update is null, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
     ),
   ).toBe(true);
@@ -126,7 +117,7 @@ test('if payload update is empty, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
     ),
   ).toBe(true);
@@ -255,10 +246,15 @@ describe('given defined state', () => {
             },
           };
 
+          const update = { propA: 5, propB: x => x * 2 };
+          const newItem = new TestObject(5, 20);
+          newItem.id = testObject1.id;
+          updateOneStub.withArgs(testObject1, update).returns(newItem);
+
           // When
           const updatedState = updateOneHandler(existingState, {
             objectType: TestObject,
-            update: { propA: 5 },
+            update,
           });
 
           // Then
@@ -284,10 +280,15 @@ describe('given defined state', () => {
             [TestObject.stateSlice]: existingStateSlice,
           };
 
+          const update = { propA: 5, propB: x => x * 2 };
+          const newItem = new TestObject(5, 20);
+          newItem.id = testObject1.id;
+          updateOneStub.withArgs(testObject1, update).returns(newItem);
+
           // When
           const updatedState = updateOneHandler(existingState, {
             objectType: TestObject,
-            update: { propA: 5 },
+            update,
           });
 
           // Then
@@ -317,16 +318,9 @@ describe('given defined state', () => {
             };
 
             const update = { propA: 5, propB: x => x * 2 };
-
-            const func1 = (x) => {
-              x.propA = 5;
-            };
-            const func2 = (x) => {
-              x.propB *= 2;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([func1, func2]);
+            const newItem = new TestObject(5, 20);
+            newItem.id = testObject1.id;
+            updateOneStub.withArgs(testObject1, update).returns(newItem);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -337,7 +331,7 @@ describe('given defined state', () => {
             // Then
             expect(updatedState).toEqual({
               [TestObject.stateSlice]: {
-                [testObject1.id]: { ...testObject1, propA: 5, propB: 20 },
+                [testObject1.id]: newItem,
                 [testObject2.id]: testObject2,
               },
             });
@@ -363,16 +357,9 @@ describe('given defined state', () => {
             };
 
             const update = { propA: 5, propB: x => x * 2 };
-
-            const func1 = (x) => {
-              x.propA = 5;
-            };
-            const func2 = (x) => {
-              x.propB *= 2;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([func1, func2]);
+            const newItem = new TestObject(5, 20);
+            newItem.id = testObject1.id;
+            updateOneStub.withArgs(testObject1, update).returns(newItem);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -400,30 +387,23 @@ describe('given defined state', () => {
 
             const testObject1 = new TestObject(1, 10);
             const testObject2 = new TestObject(2, 20);
+            const existingStateSlice = {
+              [testObject1.id]: testObject1,
+              [testObject2.id]: testObject2,
+            };
             const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
+              [TestObject.stateSlice]: existingStateSlice,
             };
 
             const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = x => x.propA === 2;
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
+            filterOneStub
+              .withArgs(existingStateSlice, filter)
+              .returns(testObject2);
 
             const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = (x) => {
-              x.propB *= 3;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
+            const newItem = new TestObject(6, 60);
+            newItem.id = testObject2.id;
+            updateOneStub.withArgs(testObject2, update).returns(newItem);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -436,7 +416,7 @@ describe('given defined state', () => {
             expect(updatedState).toEqual({
               [TestObject.stateSlice]: {
                 [testObject1.id]: testObject1,
-                [testObject2.id]: { ...testObject2, propA: 6, propB: 60 },
+                [testObject2.id]: newItem,
               },
             });
           });
@@ -453,30 +433,23 @@ describe('given defined state', () => {
 
             const testObject1 = new TestObject(1, 10);
             const testObject2 = new TestObject(2, 20);
+            const existingStateSlice = {
+              [testObject1.id]: testObject1,
+              [testObject2.id]: testObject2,
+            };
             const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
+              [TestObject.stateSlice]: existingStateSlice,
             };
 
             const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = x => x.propA === 2;
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
+            filterOneStub
+              .withArgs(existingStateSlice, filter)
+              .returns(testObject2);
 
             const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = (x) => {
-              x.propB *= 3;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
+            const newItem = new TestObject(6, 60);
+            newItem.id = testObject2.id;
+            updateOneStub.withArgs(testObject2, update).returns(newItem);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -491,7 +464,7 @@ describe('given defined state', () => {
             ).not.toBe(testObject2);
           });
 
-          test('and matching item is found, updated item is an instance of a ReduxObject', () => {
+          test('and updateOne returns null, given state is returned', () => {
             // Given
             class TestObject extends ReduxObject {
               constructor(propA, propB) {
@@ -503,138 +476,21 @@ describe('given defined state', () => {
 
             const testObject1 = new TestObject(1, 10);
             const testObject2 = new TestObject(2, 20);
+            const existingStateSlice = {
+              [testObject1.id]: testObject1,
+              [testObject2.id]: testObject2,
+            };
             const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
+              [TestObject.stateSlice]: existingStateSlice,
             };
 
             const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = x => x.propA === 2;
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
+            filterOneStub
+              .withArgs(existingStateSlice, filter)
+              .returns(testObject2);
 
             const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = (x) => {
-              x.propB *= 3;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
-
-            // When
-            const updatedState = updateOneHandler(existingState, {
-              objectType: TestObject,
-              filter,
-              update,
-            });
-
-            // Then
-            expect(
-              updatedState[TestObject.stateSlice][testObject2.id],
-            ).toBeInstanceOf(ReduxObject);
-          });
-
-          test('and item throws error during filtration, item is ignored', () => {
-            // Given
-            class TestObject extends ReduxObject {
-              constructor(propA, propB) {
-                super();
-                this.propA = propA;
-                this.propB = propB;
-              }
-            }
-
-            const testObject1 = new TestObject(1, 10);
-            const testObject2 = new TestObject(2, 20);
-            const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
-            };
-
-            const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = (x) => {
-              if (x === testObject1) {
-                throw new Error();
-              }
-              return x.propA === 2;
-            };
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
-
-            const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = (x) => {
-              x.propB *= 3;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
-
-            // When
-            const updatedState = updateOneHandler(existingState, {
-              objectType: TestObject,
-              filter,
-              update,
-            });
-
-            // Then
-            expect(updatedState).toEqual({
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: { ...testObject2, propA: 6, propB: 60 },
-              },
-            });
-          });
-
-          test('and item throws error during updating, given state is returned', () => {
-            // Given
-            class TestObject extends ReduxObject {
-              constructor(propA, propB) {
-                super();
-                this.propA = propA;
-                this.propB = propB;
-              }
-            }
-
-            const testObject1 = new TestObject(1, 10);
-            const testObject2 = new TestObject(2, 20);
-            const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
-            };
-
-            const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = x => x.propA === 2;
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
-
-            const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = () => {
-              throw new Error();
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
+            updateOneStub.withArgs(testObject2, update).returns(null);
 
             // When
             const updatedState = updateOneHandler(existingState, {
@@ -645,60 +501,6 @@ describe('given defined state', () => {
 
             // Then
             expect(updatedState).toBe(existingState);
-          });
-
-          test('and item throws error during updating, warning is published', () => {
-            // Given
-            class TestObject extends ReduxObject {
-              constructor(propA, propB) {
-                super();
-                this.propA = propA;
-                this.propB = propB;
-              }
-            }
-
-            const testObject1 = new TestObject(1, 10);
-            const testObject2 = new TestObject(2, 20);
-            const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-              },
-            };
-
-            const filter = { propA: 2, propB: 20 };
-            const filterFunc1 = x => x.propA === 2;
-            const filterFunc2 = x => x.propB === 20;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
-
-            const update = { propA: 6, propB: x => x * 3 };
-            const updateFunc1 = (x) => {
-              x.propA = 6;
-            };
-            const updateFunc2 = () => {
-              throw new Error('Invalid update call.');
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
-
-            // When
-            updateOneHandler(existingState, {
-              objectType: TestObject,
-              filter,
-              update,
-            });
-
-            // Then
-            expect(
-              warningStub.calledWith(
-                `Warning: Failed to update TestObject with id ${
-                  testObject2.id
-                } due to the following error: Error: Invalid update call.`,
-              ),
-            ).toBe(true);
           });
 
           test('but no matching object, returns given state', () => {
@@ -721,22 +523,7 @@ describe('given defined state', () => {
             };
 
             const filter = { propA: 3, propB: 30 };
-            const filterFunc1 = x => x.propA === 3;
-            const filterFunc2 = x => x.propB === 30;
-            createFilterFunctionTreeStub
-              .withArgs(filter)
-              .returns([filterFunc1, filterFunc2]);
-
             const update = { propA: 7, propB: x => x * 4 };
-            const updateFunc1 = (x) => {
-              x.propA = 7;
-            };
-            const updateFunc2 = (x) => {
-              x.propB *= 4;
-            };
-            createUpdateFunctionTreeStub
-              .withArgs(update)
-              .returns([updateFunc1, updateFunc2]);
 
             // When
             const updatedState = updateOneHandler(existingState, {

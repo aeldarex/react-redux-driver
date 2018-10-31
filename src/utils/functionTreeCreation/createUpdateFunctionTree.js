@@ -23,7 +23,7 @@ function createUpdateFunctionTree(update) {
   const functionTree = [];
   entries.forEach(e => functionTree.push(createFunctionBranch(e)));
 
-  return functionTree;
+  return x => functionTree.forEach(f => f(x));
 }
 
 export default createUpdateFunctionTree;

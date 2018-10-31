@@ -20,11 +20,11 @@ const AccessDriver = {
     let selector = createSelector(sliceSelector, allValuesSelector);
 
     if (filter) {
-      const filterFunctions = createFilterFunctionTree(filter);
+      const functionTree = createFilterFunctionTree(filter);
 
       const filterSelector = items => items.filter((i) => {
         try {
-          return filterFunctions.every(f => f(i));
+          return functionTree(i);
         } catch (e) {
           return false;
         }

@@ -3,19 +3,17 @@ import deleteManyHandler from '../../src/reducerActionHandlers/deleteManyHandler
 import ReduxObject from '../../src/ReduxObject';
 import * as filterUtils from '../../src/utils/functionTreeCreation/createFilterFunctionTree';
 
-let warningStub;
+let errorStub;
 let createFilterFunctionTreeStub;
 
-beforeEach(() => {
-  warningStub = sinon.stub(console, 'error');
-
+beforeAll(() => {
+  errorStub = sinon.stub(console, 'error');
   createFilterFunctionTreeStub = sinon.stub(filterUtils, 'default');
-  createFilterFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
-  warningStub.restore();
-  createFilterFunctionTreeStub.restore();
+  errorStub.reset();
+  createFilterFunctionTreeStub.reset();
 });
 
 test('if state is undefined, produces warning', () => {
@@ -24,7 +22,7 @@ test('if state is undefined, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       'Warning: A DRIVER_DELETE_MANY action was ignored because the given state was null or undefined.',
     ),
   ).toBe(true);
@@ -44,7 +42,7 @@ test('if state is null, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       'Warning: A DRIVER_DELETE_MANY action was ignored because the given state was null or undefined.',
     ),
   ).toBe(true);
@@ -64,7 +62,7 @@ test('if payload objectType is undefined, produces warning', () => {
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
     ),
   ).toBe(true);
@@ -76,7 +74,7 @@ test('if payload objectType is object which does not extend ReduxObject, produce
 
   // Then
   expect(
-    warningStub.calledWith(
+    errorStub.calledWith(
       "Warning: A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
     ),
   ).toBe(true);
@@ -248,11 +246,10 @@ describe('given defined state', () => {
 
             const filter = {};
 
-            const func1 = () => true;
-            const func2 = x => x === testObject2 || x === testObject3;
+            const functionTree = x => x === testObject2 || x === testObject3;
             createFilterFunctionTreeStub
               .withArgs(sinon.match.same(filter))
-              .returns([func1, func2]);
+              .returns(functionTree);
 
             // When
             const updatedState = deleteManyHandler(existingState, {
@@ -264,49 +261,6 @@ describe('given defined state', () => {
             expect(updatedState).toEqual({
               [TestObject.stateSlice]: {
                 [testObject1.id]: testObject1,
-              },
-            });
-          });
-
-          test('and object throws error while running filter functions, item is considered as not matching filter', () => {
-            // Given
-            class TestObject extends ReduxObject {}
-
-            const testObject1 = new TestObject();
-            const testObject2 = new TestObject();
-            const testObject3 = new TestObject();
-            const existingState = {
-              [TestObject.stateSlice]: {
-                [testObject1.id]: testObject1,
-                [testObject2.id]: testObject2,
-                [testObject3.id]: testObject3,
-              },
-            };
-
-            const filter = {};
-
-            const func1 = () => true;
-            const func2 = (x) => {
-              if (x === testObject2) {
-                throw new Error();
-              }
-
-              return true;
-            };
-            createFilterFunctionTreeStub
-              .withArgs(sinon.match.same(filter))
-              .returns([func1, func2]);
-
-            // When
-            const updatedState = deleteManyHandler(existingState, {
-              objectType: TestObject,
-              filter,
-            });
-
-            // Then
-            expect(updatedState).toEqual({
-              [TestObject.stateSlice]: {
-                [testObject2.id]: testObject2,
               },
             });
           });
@@ -326,11 +280,10 @@ describe('given defined state', () => {
 
             const filter = {};
 
-            const func1 = () => true;
-            const func2 = () => false;
+            const functionTree = () => false;
             createFilterFunctionTreeStub
               .withArgs(sinon.match.same(filter))
-              .returns([func1, func2]);
+              .returns(functionTree);
 
             // When
             const updatedState = deleteManyHandler(existingState, {

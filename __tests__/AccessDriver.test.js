@@ -3,19 +3,17 @@ import AccessDriver from '../src/AccessDriver';
 import ReduxObject from '../src/ReduxObject';
 import * as filterUtils from '../src/utils/functionTreeCreation/createFilterFunctionTree';
 
-let warningStub;
+let errorStub;
 let createFilterFunctionTreeStub;
 
-beforeEach(() => {
-  warningStub = sinon.stub(console, 'error');
-
+beforeAll(() => {
+  errorStub = sinon.stub(console, 'error');
   createFilterFunctionTreeStub = sinon.stub(filterUtils, 'default');
-  createFilterFunctionTreeStub.returns([]);
 });
 
 afterEach(() => {
-  warningStub.restore();
-  createFilterFunctionTreeStub.restore();
+  errorStub.reset();
+  createFilterFunctionTreeStub.reset();
 });
 
 describe('find', () => {
@@ -24,8 +22,8 @@ describe('find', () => {
     AccessDriver.find({});
 
     // Then
-    expect(warningStub.calledOnce).toBe(true);
-    expect(warningStub.getCall(0).args[0]).toBe(
+    expect(errorStub.calledOnce).toBe(true);
+    expect(errorStub.getCall(0).args[0]).toBe(
       'Warning: To create a working selector objectType must extend ReduxObject.',
     );
   });
@@ -89,11 +87,10 @@ describe('find', () => {
 
         const filter = {};
 
-        const func1 = () => true;
-        const func2 = x => x === testObject2;
+        const functionTree = x => x === testObject2;
         createFilterFunctionTreeStub
           .withArgs(sinon.match.same(filter))
-          .returns([func1, func2]);
+          .returns(functionTree);
 
         // When
         const selector = AccessDriver.find(TestObject, filter);
@@ -118,8 +115,7 @@ describe('find', () => {
 
         const filter = {};
 
-        const func1 = () => true;
-        const func2 = (x) => {
+        const functionTree = (x) => {
           if (x === testObject2) {
             throw new Error();
           }
@@ -128,7 +124,7 @@ describe('find', () => {
 
         createFilterFunctionTreeStub
           .withArgs(sinon.match.same(filter))
-          .returns([func1, func2]);
+          .returns(functionTree);
 
         // When
         const selector = AccessDriver.find(TestObject, filter);

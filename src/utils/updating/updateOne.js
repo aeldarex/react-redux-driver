@@ -1,12 +1,12 @@
 import warning from 'warning';
-import { createUpdateFunctionTree } from '../../utils/functionTreeCreation';
+import { createUpdateFunctionTree } from '../functionTreeCreation';
 
 function updateOne(item, update) {
-  const updateFunctions = createUpdateFunctionTree(update);
+  const functionTree = createUpdateFunctionTree(update);
 
   const itemCopy = JSON.parse(JSON.stringify(item));
   try {
-    updateFunctions.forEach(f => f(itemCopy));
+    functionTree(itemCopy);
   } catch (e) {
     warning(
       false,

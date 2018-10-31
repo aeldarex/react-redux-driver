@@ -1,7 +1,7 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isReduxObjectType from '../utils/isReduxObjectType';
-import { filterOne } from './handlerUtils';
+import { filterOne } from '../utils/filtering';
 
 function deleteOneHandler(state, { objectType, filter } = {}) {
   if (!state || !isReduxObjectType(objectType)) {

@@ -5,8 +5,8 @@ test('if object is specified with primitive, created function tree returns true 
   const obj1 = { propA: 5 };
 
   // When
-  const functionList = createFilterFunctionTree({ propA: 5 });
-  const result = functionList.every(f => f(obj1));
+  const functionTree = createFilterFunctionTree({ propA: 5 });
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(true);
@@ -17,8 +17,8 @@ test('if object is specified with primitive, created function tree returns false
   const obj1 = { propA: '5' };
 
   // When
-  const functionList = createFilterFunctionTree({ propA: 5 });
-  const result = functionList.every(f => f(obj1));
+  const functionTree = createFilterFunctionTree({ propA: 5 });
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(false);
@@ -29,8 +29,8 @@ test('if object is specified with function, created function tree returns true f
   const obj1 = { propA: 5 };
 
   // When
-  const functionList = createFilterFunctionTree({ propA: x => x > 2 });
-  const result = functionList.every(f => f(obj1));
+  const functionTree = createFilterFunctionTree({ propA: x => x > 2 });
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(true);
@@ -41,8 +41,8 @@ test('if object is specified with function, created function tree returns false 
   const obj1 = { propA: 1 };
 
   // When
-  const functionList = createFilterFunctionTree({ propA: x => x > 2 });
-  const result = functionList.every(f => f(obj1));
+  const functionTree = createFilterFunctionTree({ propA: x => x > 2 });
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(false);
@@ -58,11 +58,11 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFilterFunctionTree({
+  const functionTree = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
-  const result = functionList.every(f => f(obj1));
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(true);
@@ -78,11 +78,11 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFilterFunctionTree({
+  const functionTree = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
-  const result = functionList.every(f => f(obj1));
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(false);
@@ -98,11 +98,11 @@ test('if object is specified with depth greater than 1, created function tree re
   };
 
   // When
-  const functionList = createFilterFunctionTree({
+  const functionTree = createFilterFunctionTree({
     propA: 5,
     propB: { propC: x => x.includes('cool') },
   });
-  const result = functionList.every(f => f(obj1));
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(false);
@@ -118,11 +118,11 @@ test('if object contains nulls, created function tree returns true for input obj
   };
 
   // When
-  const functionList = createFilterFunctionTree({
+  const functionTree = createFilterFunctionTree({
     propA: 5,
     propB: { propC: null },
   });
-  const result = functionList.every(f => f(obj1));
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(true);
@@ -138,11 +138,11 @@ test('if object contains nulls, created function tree returns false for input ob
   };
 
   // When
-  const functionList = createFilterFunctionTree({
+  const functionTree = createFilterFunctionTree({
     propA: 5,
     propB: { propC: null },
   });
-  const result = functionList.every(f => f(obj1));
+  const result = functionTree(obj1);
 
   // Then
   expect(result).toBe(false);
