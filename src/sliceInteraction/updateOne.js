@@ -10,9 +10,9 @@ function updateOne(item, update) {
   } catch (e) {
     warning(
       false,
-      `Failed to update ${item.constructor.name} with id ${
-        item.id
-      } due to the following error: ${e}`,
+      `Failed to update ${JSON.stringify(
+        item,
+      )} due to the following error: ${e}`,
     );
     return null;
   }
