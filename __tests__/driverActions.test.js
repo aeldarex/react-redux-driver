@@ -1,4 +1,10 @@
-import DispatchDriver from '../src/DispatchDriver';
+import {
+  insertOne,
+  insertMany,
+  updateOne,
+  deleteOne,
+  deleteMany,
+} from '../src/driverActions';
 import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
@@ -10,7 +16,7 @@ import {
 describe('insertOne', () => {
   test('returns DRIVER_INSERT_ONE action', () => {
     // When
-    const result = DispatchDriver.insertOne();
+    const result = insertOne();
 
     // Then
     expect(result.type).toBe(DRIVER_INSERT_ONE);
@@ -21,7 +27,7 @@ describe('insertOne', () => {
     const item = {};
 
     // When
-    const result = DispatchDriver.insertOne(item);
+    const result = insertOne(item);
 
     // Then
     expect(result.payload).toBe(item);
@@ -31,7 +37,7 @@ describe('insertOne', () => {
 describe('insertMany', () => {
   test('returns DRIVER_INSERT_MANY action', () => {
     // When
-    const result = DispatchDriver.insertMany();
+    const result = insertMany();
 
     // Then
     expect(result.type).toBe(DRIVER_INSERT_MANY);
@@ -42,7 +48,7 @@ describe('insertMany', () => {
     const items = [{}, {}];
 
     // When
-    const result = DispatchDriver.insertMany(items);
+    const result = insertMany(items);
 
     // Then
     expect(result.payload).toBe(items);
@@ -52,7 +58,7 @@ describe('insertMany', () => {
 describe('updateOne', () => {
   test('returns action with type of DRIVER_UPDATE_ONE', () => {
     // When
-    const result = DispatchDriver.updateOne();
+    const result = updateOne();
 
     // Then
     expect(result.type).toBe(DRIVER_UPDATE_ONE);
@@ -63,7 +69,7 @@ describe('updateOne', () => {
     const objectType = {};
 
     // When
-    const result = DispatchDriver.updateOne(objectType);
+    const result = updateOne(objectType);
 
     // Then
     expect(result.payload.objectType).toBe(objectType);
@@ -74,7 +80,7 @@ describe('updateOne', () => {
     const filter = {};
 
     // When
-    const result = DispatchDriver.updateOne({}, filter);
+    const result = updateOne({}, filter);
 
     // Then
     expect(result.payload.filter).toBe(filter);
@@ -85,7 +91,7 @@ describe('updateOne', () => {
     const update = {};
 
     // When
-    const result = DispatchDriver.updateOne({}, {}, update);
+    const result = updateOne({}, {}, update);
 
     // Then
     expect(result.payload.update).toBe(update);
@@ -95,7 +101,7 @@ describe('updateOne', () => {
 describe('deleteOne', () => {
   test('returns action with type of DRIVER_DELETE_ONE', () => {
     // When
-    const result = DispatchDriver.deleteOne();
+    const result = deleteOne();
 
     // Then
     expect(result.type).toBe(DRIVER_DELETE_ONE);
@@ -106,7 +112,7 @@ describe('deleteOne', () => {
     const objectType = {};
 
     // When
-    const result = DispatchDriver.deleteOne(objectType);
+    const result = deleteOne(objectType);
 
     // Then
     expect(result.payload.objectType).toBe(objectType);
@@ -117,7 +123,7 @@ describe('deleteOne', () => {
     const filter = {};
 
     // When
-    const result = DispatchDriver.deleteOne({}, filter);
+    const result = deleteOne({}, filter);
 
     // Then
     expect(result.payload.filter).toBe(filter);
@@ -127,7 +133,7 @@ describe('deleteOne', () => {
 describe('deleteMany', () => {
   test('returns action with type of DRIVER_DELETE_MANY', () => {
     // When
-    const result = DispatchDriver.deleteMany();
+    const result = deleteMany();
 
     // Then
     expect(result.type).toBe(DRIVER_DELETE_MANY);
@@ -138,7 +144,7 @@ describe('deleteMany', () => {
     const objectType = {};
 
     // When
-    const result = DispatchDriver.deleteMany(objectType);
+    const result = deleteMany(objectType);
 
     // Then
     expect(result.payload.objectType).toBe(objectType);
@@ -149,7 +155,7 @@ describe('deleteMany', () => {
     const filter = {};
 
     // When
-    const result = DispatchDriver.deleteMany({}, filter);
+    const result = deleteMany({}, filter);
 
     // Then
     expect(result.payload.filter).toBe(filter);

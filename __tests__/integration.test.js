@@ -1,5 +1,11 @@
-import AccessDriver from '../src/AccessDriver';
-import DispatchDriver from '../src/DispatchDriver';
+import { find } from '../src/selectors';
+import {
+  insertOne,
+  insertMany,
+  updateOne,
+  deleteOne,
+  deleteMany,
+} from '../src/driverActions';
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
 
@@ -13,13 +19,13 @@ test('inserted objects using insertOne action can be located with access driver 
   let state = {};
 
   // When
-  const action1 = DispatchDriver.insertOne(testObject1);
+  const action1 = insertOne(testObject1);
   state = reducer(state, action1);
 
-  const action2 = DispatchDriver.insertOne(testObject2);
+  const action2 = insertOne(testObject2);
   state = reducer(state, action2);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -36,10 +42,10 @@ test('inserted objects using insertMany action can be located with access driver
   let state = {};
 
   // When
-  const action = DispatchDriver.insertMany([testObject1, testObject2]);
+  const action = insertMany([testObject1, testObject2]);
   state = reducer(state, action);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -63,7 +69,7 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
   let state = {};
 
   // When
-  const insertAction = DispatchDriver.insertMany([
+  const insertAction = insertMany([
     testObject1,
     testObject2,
     testObject3,
@@ -71,10 +77,10 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = DispatchDriver.deleteOne(TestObject, { propA: 3 });
+  const deleteAction = deleteOne(TestObject, { propA: 3 });
   state = reducer(state, deleteAction);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -98,7 +104,7 @@ test('inserted objects using insertMany, then delete some with deleteMany, then 
   let state = {};
 
   // When
-  const insertAction = DispatchDriver.insertMany([
+  const insertAction = insertMany([
     testObject1,
     testObject2,
     testObject3,
@@ -106,10 +112,10 @@ test('inserted objects using insertMany, then delete some with deleteMany, then 
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = DispatchDriver.deleteMany(TestObject, { propA: 2 });
+  const deleteAction = deleteMany(TestObject, { propA: 2 });
   state = reducer(state, deleteAction);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -151,7 +157,7 @@ test('insert objects using insertMany action, then find specific objects using c
   let state = {};
 
   // When
-  const action = DispatchDriver.insertMany([
+  const action = insertMany([
     testObject1,
     testObject2,
     testObject3,
@@ -159,7 +165,7 @@ test('insert objects using insertMany action, then find specific objects using c
   ]);
   state = reducer(state, action);
 
-  const selector = AccessDriver.find(TestObject, {
+  const selector = find(TestObject, {
     sectionNumber: 1,
     childObj1: { propA: x => x < 30 },
     childObj2: { propB: x => x.includes('cool') },
@@ -188,7 +194,7 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
   let state = {};
 
   // When
-  const insertAction = DispatchDriver.insertMany([
+  const insertAction = insertMany([
     testObject1,
     testObject2,
     testObject3,
@@ -196,13 +202,13 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = DispatchDriver.deleteOne(TestObject, {
+  const deleteAction = deleteOne(TestObject, {
     propA: x => x > 1,
     propB: { propC: 'goodbye' },
   });
   state = reducer(state, deleteAction);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -227,7 +233,7 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   let state = {};
 
   // When
-  const insertAction = DispatchDriver.insertMany([
+  const insertAction = insertMany([
     testObject1,
     testObject2,
     testObject3,
@@ -235,13 +241,13 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = DispatchDriver.deleteMany(TestObject, {
+  const deleteAction = deleteMany(TestObject, {
     propA: x => x > 1,
     propB: { propC: 'goodbye' },
   });
   state = reducer(state, deleteAction);
 
-  const selector = AccessDriver.find(TestObject);
+  const selector = find(TestObject);
   const locatedObjects = selector(state);
 
   // Then
@@ -265,14 +271,10 @@ test('insert objects using insertMany action, then update one with updateOne usi
   let state = {};
 
   // When
-  const insertAction = DispatchDriver.insertMany([
-    testObject1,
-    testObject2,
-    testObject3,
-  ]);
+  const insertAction = insertMany([testObject1, testObject2, testObject3]);
   state = reducer(state, insertAction);
 
-  const updateAction = DispatchDriver.updateOne(
+  const updateAction = updateOne(
     TestObject,
     {
       propA: x => x > 1,
@@ -285,7 +287,7 @@ test('insert objects using insertMany action, then update one with updateOne usi
   );
   state = reducer(state, updateAction);
 
-  const selector = AccessDriver.find(TestObject, { id: testObject2.id });
+  const selector = find(TestObject, { id: testObject2.id });
   const locatedObjects = selector(state);
 
   // Then
