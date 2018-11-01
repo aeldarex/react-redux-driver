@@ -1,7 +1,14 @@
-import createFindManySelector from './selectorCreation/createFindManySelector';
+import {
+  createFindManySelector,
+  createFindOneSelector,
+} from './selectorCreation';
 
-function find(objectType, filter) {
+function findOne(objectType, filter) {
+  return createFindOneSelector(objectType, filter);
+}
+
+function findMany(objectType, filter) {
   return createFindManySelector(objectType, filter);
 }
 
-export { find };
+export { findOne, findMany };

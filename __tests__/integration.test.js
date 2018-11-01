@@ -1,4 +1,4 @@
-import { find } from '../src/selectors';
+import { findMany } from '../src/selectors';
 import {
   insertOne,
   insertMany,
@@ -9,7 +9,7 @@ import {
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
 
-test('inserted objects using insertOne action can be located with access driver find selector', () => {
+test('inserted objects using insertOne action can be located with access driver findMany selector', () => {
   // Given
   class TestObject extends ReduxObject {}
 
@@ -25,14 +25,14 @@ test('inserted objects using insertOne action can be located with access driver 
   const action2 = insertOne(testObject2);
   state = reducer(state, action2);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject2]);
 });
 
-test('inserted objects using insertMany action can be located with access driver find selector', () => {
+test('inserted objects using insertMany action can be located with access driver findMany selector', () => {
   // Given
   class TestObject extends ReduxObject {}
 
@@ -45,14 +45,14 @@ test('inserted objects using insertMany action can be located with access driver
   const action = insertMany([testObject1, testObject2]);
   state = reducer(state, action);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject2]);
 });
 
-test('inserted objects using insertMany, then delete one with deleteOne, then get all remaining with access driver find selector', () => {
+test('inserted objects using insertMany, then delete one with deleteOne, then get all remaining with access driver findMany selector', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(propA) {
@@ -80,14 +80,14 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
   const deleteAction = deleteOne(TestObject, { propA: 3 });
   state = reducer(state, deleteAction);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject2, testObject4]);
 });
 
-test('inserted objects using insertMany, then delete some with deleteMany, then get all remaining with access driver find selector', () => {
+test('inserted objects using insertMany, then delete some with deleteMany, then get all remaining with access driver findMany selector', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(propA) {
@@ -115,14 +115,14 @@ test('inserted objects using insertMany, then delete some with deleteMany, then 
   const deleteAction = deleteMany(TestObject, { propA: 2 });
   state = reducer(state, deleteAction);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject3]);
 });
 
-test('insert objects using insertMany action, then find specific objects using complex filter with access driver', () => {
+test('insert objects using insertMany action, then find specific objects using complex filter with findMany', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(sectionNumber, childObj1, childObj2) {
@@ -165,7 +165,7 @@ test('insert objects using insertMany action, then find specific objects using c
   ]);
   state = reducer(state, action);
 
-  const selector = find(TestObject, {
+  const selector = findMany(TestObject, {
     sectionNumber: 1,
     childObj1: { propA: x => x < 30 },
     childObj2: { propB: x => x.includes('cool') },
@@ -176,7 +176,7 @@ test('insert objects using insertMany action, then find specific objects using c
   expect(locatedObjects).toEqual([testObject1, testObject3]);
 });
 
-test('insert objects using insertMany action, then delete one with deleteOne using complex filter, then get all remaining with find', () => {
+test('insert objects using insertMany action, then delete one with deleteOne using complex filter, then get all remaining with findMany', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(propA, propB) {
@@ -208,14 +208,14 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
   });
   state = reducer(state, deleteAction);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject3, testObject4]);
 });
 
-test('insert objects using insertMany action, then delete multiple with deleteMany using complex filter, then get all remaining with find', () => {
+test('insert objects using insertMany action, then delete multiple with deleteMany using complex filter, then get all remaining with findMany', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(propA, propB) {
@@ -247,14 +247,14 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   });
   state = reducer(state, deleteAction);
 
-  const selector = find(TestObject);
+  const selector = findMany(TestObject);
   const locatedObjects = selector(state);
 
   // Then
   expect(locatedObjects).toEqual([testObject1, testObject4]);
 });
 
-test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with find', () => {
+test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with findMany', () => {
   // Given
   class TestObject extends ReduxObject {
     constructor(propA, propB) {
@@ -287,7 +287,7 @@ test('insert objects using insertMany action, then update one with updateOne usi
   );
   state = reducer(state, updateAction);
 
-  const selector = find(TestObject, { id: testObject2.id });
+  const selector = findMany(TestObject, { id: testObject2.id });
   const locatedObjects = selector(state);
 
   // Then

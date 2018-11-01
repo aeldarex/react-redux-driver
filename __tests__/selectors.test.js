@@ -1,11 +1,17 @@
 import sinon from 'sinon';
+import * as CreateFindOneSelectorModule from '../src/selectorCreation/createFindOneSelector';
 import * as CreateFindManySelectorModule from '../src/selectorCreation/createFindManySelector';
 import ReduxObject from '../src/ReduxObject';
-import { find } from '../src/selectors';
+import { findOne, findMany } from '../src/selectors';
 
+let createFindOneSelectorStub;
 let createFindManySelectorStub;
 
 beforeAll(() => {
+  createFindOneSelectorStub = sinon.stub(
+    CreateFindOneSelectorModule,
+    'default',
+  );
   createFindManySelectorStub = sinon.stub(
     CreateFindManySelectorModule,
     'default',
@@ -13,14 +19,33 @@ beforeAll(() => {
 });
 
 afterEach(() => {
+  createFindOneSelectorStub.reset();
   createFindManySelectorStub.reset();
 });
 
 afterAll(() => {
+  createFindOneSelectorStub.restore();
   createFindManySelectorStub.restore();
 });
 
-test('find creates find many selector with given object type and filter', () => {
+test('findOne returns selector with given object type and filter', () => {
+  // Given
+  class TestObject extends ReduxObject {}
+  const filter = { propA: 5 };
+
+  const findOneSelector = {};
+  createFindOneSelectorStub
+    .withArgs(TestObject, filter)
+    .returns(findOneSelector);
+
+  // When
+  const selector = findOne(TestObject, filter);
+
+  // Then
+  expect(selector).toBe(findOneSelector);
+});
+
+test('findMany returns selector with given object type and filter', () => {
   // Given
   class TestObject extends ReduxObject {}
   const filter = { propA: 5 };
@@ -31,7 +56,7 @@ test('find creates find many selector with given object type and filter', () => 
     .returns(findManySelector);
 
   // When
-  const selector = find(TestObject, filter);
+  const selector = findMany(TestObject, filter);
 
   // Then
   expect(selector).toBe(findManySelector);
