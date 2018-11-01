@@ -94,4 +94,7 @@ test('given objectType that is not a ReduxObject publishes warning', () => {
       'Warning: To create a working selector objectType must extend ReduxObject.',
     ),
   ).toBe(true);
+
+  // Cleanup
+  errorStub.restore();
 });
