@@ -1,4 +1,4 @@
-import { findMany } from '../src/selectors';
+import { findOne, findMany } from '../src/selectors';
 import {
   insertOne,
   insertMany,
@@ -299,4 +299,34 @@ test('insert objects using insertMany action, then update one with updateOne usi
       propC: 'good afternoon and night',
     },
   });
+});
+
+test('insert objects using insertMany action, then get an item with findOne', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'good morning' });
+  const testObject2 = new TestObject(1, { propC: 'good afternoon' });
+  const testObject3 = new TestObject(1, { propC: 'good evening' });
+
+  let state = {};
+
+  // When
+  const insertAction = insertMany([testObject1, testObject2, testObject3]);
+  state = reducer(state, insertAction);
+
+  const selector = findOne(TestObject, {
+    propA: 1,
+    propB: { propC: x => x.includes('afternoon') },
+  });
+  const locatedObject = selector(state);
+
+  // Then
+  expect(locatedObject).toBe(testObject2);
 });
