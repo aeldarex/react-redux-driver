@@ -3,6 +3,7 @@ import {
   insertOne,
   insertMany,
   updateOne,
+  updateMany,
   deleteOne,
   deleteMany,
 } from '../src/driverActions';
@@ -329,4 +330,54 @@ test('insert objects using insertMany action, then get an item with findOne', ()
 
   // Then
   expect(locatedObject).toBe(testObject2);
+});
+
+test('insert objects using insertMany action, then update some using updateMany, then get all items with findMany', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'good morning' });
+  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
+  const testObject3 = new TestObject(2, { propC: 'good evening' });
+  const testObject4 = new TestObject(3, { propC: 'good night' });
+
+  let state = {};
+
+  // When
+  const insertAction = insertMany([
+    testObject1,
+    testObject2,
+    testObject3,
+    testObject4,
+  ]);
+  state = reducer(state, insertAction);
+
+  const updateAction = updateMany(
+    TestObject,
+    { propA: 2 },
+    { propB: { propC: x => x.concat('!') } },
+  );
+  state = reducer(state, updateAction);
+
+  const selector = findMany(TestObject, {
+    propB: { propC: x => x.includes('!') },
+  });
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects.length).toBe(2);
+  expect(locatedObjects).toContainEqual({
+    ...testObject2,
+    propB: { propC: 'good afternoon!' },
+  });
+  expect(locatedObjects).toContainEqual({
+    ...testObject3,
+    propB: { propC: 'good evening!' },
+  });
 });
