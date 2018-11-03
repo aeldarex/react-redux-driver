@@ -6,6 +6,12 @@
 
 A set of reducer functions, dispatchable actions, and selector creators to simplify CRUD operations with react-redux.
 
+## Installation
+
+```
+npm install --save react-redux-driver
+```
+
 ## License
 
 MIT
