@@ -2,8 +2,9 @@ export {
   insertOne,
   insertMany,
   updateOne,
+  updateMany,
   deleteOne,
-  deleteMany,
+  deleteMany
 } from './src/driverActions';
 export { default as driverReducer } from './src/reducer';
 export { default as ReduxObject } from './src/ReduxObject';
