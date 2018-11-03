@@ -1,9 +1,10 @@
 import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
+  DRIVER_UPDATE_ONE,
+  DRIVER_UPDATE_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
-  DRIVER_UPDATE_ONE,
 } from './actionTypes';
 
 function insertOne(item) {
@@ -27,6 +28,13 @@ function updateOne(objectType, filter, update) {
   };
 }
 
+function updateMany(objectType, filter, update) {
+  return {
+    type: DRIVER_UPDATE_MANY,
+    payload: { objectType, filter, update },
+  };
+}
+
 function deleteOne(objectType, filter) {
   return {
     type: DRIVER_DELETE_ONE,
@@ -42,5 +50,5 @@ function deleteMany(objectType, filter) {
 }
 
 export {
-  insertOne, insertMany, updateOne, deleteOne, deleteMany,
+  insertOne, insertMany, updateOne, updateMany, deleteOne, deleteMany,
 };

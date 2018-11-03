@@ -2,6 +2,7 @@ import {
   insertOne,
   insertMany,
   updateOne,
+  updateMany,
   deleteOne,
   deleteMany,
 } from '../src/driverActions';
@@ -9,6 +10,7 @@ import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
+  DRIVER_UPDATE_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
 } from '../src/actionTypes';
@@ -92,6 +94,49 @@ describe('updateOne', () => {
 
     // When
     const result = updateOne({}, {}, update);
+
+    // Then
+    expect(result.payload.update).toBe(update);
+  });
+});
+
+describe('updateMany', () => {
+  test('returns action with type of DRIVER_UPDATE_MANY', () => {
+    // When
+    const result = updateMany();
+
+    // Then
+    expect(result.type).toBe(DRIVER_UPDATE_MANY);
+  });
+
+  test('returns action with payload containing given object type', () => {
+    // Given
+    const objectType = {};
+
+    // When
+    const result = updateMany(objectType);
+
+    // Then
+    expect(result.payload.objectType).toBe(objectType);
+  });
+
+  test('returns action with payload containing given filter', () => {
+    // Given
+    const filter = {};
+
+    // When
+    const result = updateMany({}, filter);
+
+    // Then
+    expect(result.payload.filter).toBe(filter);
+  });
+
+  test('returns action with payload containing given update', () => {
+    // Given
+    const update = {};
+
+    // When
+    const result = updateMany({}, {}, update);
 
     // Then
     expect(result.payload.update).toBe(update);
