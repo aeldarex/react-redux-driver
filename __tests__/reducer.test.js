@@ -2,29 +2,33 @@ import sinon from 'sinon';
 import {
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
+  DRIVER_UPDATE_ONE,
+  DRIVER_UPDATE_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
-  DRIVER_UPDATE_ONE,
 } from '../src/actionTypes';
 import * as InsertOneHandlerModule from '../src/reducerActionHandlers/insertOneHandler';
 import * as InsertManyHandlerModule from '../src/reducerActionHandlers/insertManyHandler';
+import * as UpdateOneHandlerModule from '../src/reducerActionHandlers/updateOneHandler';
+import * as UpdateManyHandlerModule from '../src/reducerActionHandlers/updateManyHandler';
 import * as DeleteOneHandlerModule from '../src/reducerActionHandlers/deleteOneHandler';
 import * as DeleteManyHandlerModule from '../src/reducerActionHandlers/deleteManyHandler';
-import * as UpdateOneHandlerModule from '../src/reducerActionHandlers/updateOneHandler';
 
 let insertOneHandlerStub;
 let insertManyHandlerStub;
+let updateOneHandlerStub;
+let updateManyHandlerStub;
 let deleteOneHandlerStub;
 let deleteManyHandlerStub;
-let updateOneHandlerStub;
 let reducer;
 
 beforeAll(() => {
   insertOneHandlerStub = sinon.stub(InsertOneHandlerModule, 'default');
   insertManyHandlerStub = sinon.stub(InsertManyHandlerModule, 'default');
+  updateOneHandlerStub = sinon.stub(UpdateOneHandlerModule, 'default');
+  updateManyHandlerStub = sinon.stub(UpdateManyHandlerModule, 'default');
   deleteOneHandlerStub = sinon.stub(DeleteOneHandlerModule, 'default');
   deleteManyHandlerStub = sinon.stub(DeleteManyHandlerModule, 'default');
-  updateOneHandlerStub = sinon.stub(UpdateOneHandlerModule, 'default');
 
   // eslint-disable-next-line global-require
   reducer = require('../src/reducer').default;
@@ -33,9 +37,10 @@ beforeAll(() => {
 afterEach(() => {
   insertOneHandlerStub.reset();
   insertManyHandlerStub.reset();
+  updateOneHandlerStub.reset();
+  updateManyHandlerStub.reset();
   deleteOneHandlerStub.reset();
   deleteManyHandlerStub.reset();
-  updateOneHandlerStub.reset();
 });
 
 test('given undefined state and unhandled action type reducer returns empty object', () => {
@@ -225,6 +230,39 @@ test('given defined state and DRIVER_UPDATE_ONE action, calls updateOneHandler w
 
   // When
   const result = reducer(givenState, { type: DRIVER_UPDATE_ONE, payload });
+
+  // Then
+  expect(result).toBe(updatedState);
+});
+
+test('given undefined state and DRIVER_UPDATE_MANY action, calls updateManyHandler with empty object for state and given payload', () => {
+  // Given
+  const payload = {};
+  const updatedState = {};
+
+  updateManyHandlerStub
+    .withArgs({}, sinon.match.same(payload))
+    .returns(updatedState);
+
+  // When
+  const result = reducer(undefined, { type: DRIVER_UPDATE_MANY, payload });
+
+  // Then
+  expect(result).toBe(updatedState);
+});
+
+test('given defined state and DRIVER_UPDATE_MANY action, calls updateManyHandler with given state and payload', () => {
+  // Given
+  const givenState = {};
+  const payload = {};
+  const updatedState = {};
+
+  updateManyHandlerStub
+    .withArgs(sinon.match.same(givenState), sinon.match.same(payload))
+    .returns(updatedState);
+
+  // When
+  const result = reducer(givenState, { type: DRIVER_UPDATE_MANY, payload });
 
   // Then
   expect(result).toBe(updatedState);
