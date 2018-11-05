@@ -34,6 +34,23 @@ export default rootReducer;
 
 The main takeaway is that it's important for the driverReducer to operate at the **top-level** of the state. If you are unfamiliar with the syntax above checkout out the github for [reduce-reducers](https://github.com/redux-utilities/reduce-reducers) as well as this [stack overflow](https://stackoverflow.com/questions/38652789/correct-usage-of-reduce-reducers/44371190#44371190) which goes into detail about the differences between combineReducers and reduceReducers.
 
+## Creating a ReduxObject
+
+The next step is to create an object model for the data you want to store. All driver pieces operate on the assumption that the objects being persisted/read extend the ReduxObject class included in the package.
+
+```javascript
+import { ReduxObject } from 'react-redux-driver';
+
+class Friend extends ReduxObject {
+  constructor(name) {
+    super();
+    this.name = name;
+  }
+}
+```
+
+The only requirement from the above code is that the class extends ReduxObject, how you instantiate or otherwise manipulate the objects is up to you. The driver will **ALWAYS** preserve the prototype when manipulating the state, so feel free to add non-primitive items to the class definitions.
+
 ## License
 
 MIT
