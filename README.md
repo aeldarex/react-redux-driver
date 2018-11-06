@@ -99,6 +99,13 @@ As with the filter object, let's break things down.
 
 As with filter, the update objects can be of any depth and update functions can be of any complexity, but the same warning regarding creation of long running operations applies here as well.
 
+### What happens if my filter or update throws an error?
+
+As javascript is not a typed language, there is no guarantee that all of our objects in the state will look the same, so sometimes a filter or update function may be run on an item it can't handle. The reducers account for this with the following logic.
+
+- filter: If a filter throws an error then the object which caused the Error will be considered as failing the filter.
+- update: If an update throws an error the object will not be updated and a warning will be published.
+
 ## Dispatch Actions
 
 Equipped with the knowledge of how to create filter and update objects, let's look at the dispatchable actions available to us as part of the driver.
