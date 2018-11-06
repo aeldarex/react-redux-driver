@@ -13,17 +13,20 @@ import { findMany, insertOne, updateOne, deleteOne } from 'react-redux-driver';
 import { Todo } from './models';
 
 class TodoList extends Component {
+  // Insert new Todo into redux state
   insertTodo = () => {
     const { newTodoName } = this.state;
     const newTodo = new Todo(newTodoName, 'open');
     this.props.insertOne(newTodo);
   }
 
+  // Remove selected Todo from redux state
   removeTodo = () => {
     const { selectedTodo } = this.state;
     this.props.deleteOne(Todo, { id: selectedTodo.id });
   }
 
+  // Update selected Todo in redux state with status 'done'
   markDone = () => {
     const { selectedTodo } = this.state;
     this.props.updateOne(Todo, { id: selectedTodo.id }, { status: 'done' });
@@ -39,6 +42,7 @@ class TodoList extends Component {
 
 const mapStateToProps = (state) => {
   return {
+    // Select all Todo objects with status 'open' or 'inProgress' from redux state
     todos: findMany(Todo, { status: x => x === 'open' || x === 'inProgress' })
   };
 };
