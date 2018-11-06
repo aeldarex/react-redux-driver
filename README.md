@@ -150,6 +150,40 @@ export default connect(
 )(MyComponent);
 ```
 
+## Reading The State With Selectors
+
+So now that the state can be modified, we will also want to read our modifications back into our components. This is achieved using filter objects in combination with two provided selector functions.
+
+```typescript
+findOne(objectType: typeof ReduxObject, filter: any);
+findMany(objectType: typeof ReduxObject, filter: any);
+```
+
+The find functions create selectors for finding one or more items in the state. These use [reselect](https://github.com/reduxjs/reselect) under the hood, so they will never recompute unless the section of state for a given object type changes. Additionally, because they create plain selectors, the output can be composed into other, more complex, selectors as well.
+
+To use them simply add them to your component's react-redux connect just like with the dispatch actions.
+
+```javascript
+import { connect } from 'react-redux';
+import { findMany } from 'react-redux-driver';
+import { Friend } from './models';
+
+// const MyComponent = ...
+
+const mapStateToProps = state => {
+  return {
+    blueFriends: findMany(Friend, { team: 'blue' })
+  };
+};
+
+// const mapDispatchToProps = ...
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MyComponent);
+```
+
 ## License
 
 MIT
