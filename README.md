@@ -6,6 +6,48 @@
 
 A set of reducer functions, dispatchable actions, and selector creators to simplify CRUD operations with react-redux.
 
+```javascript
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { findMany, insertOne, updateOne, deleteOne } from 'react-redux-driver';
+import { Todo } from './models';
+
+class TodoList extends Component {
+  insertTodo = () => {
+    const { newTodoName } = this.state;
+    const newTodo = new Todo(newTodoName, 'open');
+    this.props.insertOne(newTodo);
+  }
+
+  removeTodo = () => {
+    const { selectedTodo } = this.state;
+    this.props.deleteOne(Todo, { id: selectedTodo.id });
+  }
+
+  markDone = () => {
+    const { selectedTodo } = this.state;
+    this.props.updateOne(Todo, { id: selectedTodo.id }, { status: 'done' });
+  }
+
+  render() {
+    const { todos } = this.props;
+    return (
+      // render list of todos...
+    )
+  }
+}
+
+const mapStateToProps = (state) => {
+  return {
+    todos: findMany(Todo, { status: x => x === 'open' || x === 'inProgress' })
+  };
+};
+
+const mapDispatchToProps = { insertOne, updateOne, deleteOne };
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
+```
+
 ## Installation
 
 ```
