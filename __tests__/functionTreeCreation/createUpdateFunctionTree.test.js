@@ -51,6 +51,24 @@ test('if object is specified with depth greater than 1, created function tree ap
   });
 });
 
+test('if object is specified with depth greater than 1 and part of the expected object tree is missing, populates the object correctly', () => {
+  // Given
+  const obj1 = { propA: 5 };
+
+  // When
+  const functionTree = createUpdateFunctionTree({
+    propA: 10,
+    propB: { propC: 'a new string!' },
+  });
+  functionTree(obj1);
+
+  // Then
+  expect(obj1).toEqual({
+    propA: 10,
+    propB: { propC: 'a new string!' },
+  });
+});
+
 test('if object contains nulls, created function tree applies nulls to given object correctly', () => {
   // Given
   const obj1 = {

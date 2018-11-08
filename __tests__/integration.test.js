@@ -381,3 +381,44 @@ test('insert objects using insertMany action, then update some using updateMany,
     propB: { propC: 'good evening!' },
   });
 });
+
+test('insert objects using insertMany action, then update all with new nested field using updateMany, then get all items with findMany', () => {
+  // Given
+  class TestObject extends ReduxObject {
+    constructor(propA, propB) {
+      super();
+      this.propA = propA;
+      this.propB = propB;
+    }
+  }
+
+  const testObject1 = new TestObject(1, { propC: 'good morning' });
+  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
+
+  let state = {};
+
+  // When
+  const insertAction = insertMany([testObject1, testObject2]);
+  state = reducer(state, insertAction);
+
+  const updateAction = updateMany(
+    TestObject,
+    {},
+    { info: { type: 'greeting' } },
+  );
+  state = reducer(state, updateAction);
+
+  const selector = findMany(TestObject);
+  const locatedObjects = selector(state);
+
+  // Then
+  expect(locatedObjects.length).toBe(2);
+  expect(locatedObjects).toContainEqual({
+    ...testObject1,
+    info: { type: 'greeting' },
+  });
+  expect(locatedObjects).toContainEqual({
+    ...testObject2,
+    info: { type: 'greeting' },
+  });
+});

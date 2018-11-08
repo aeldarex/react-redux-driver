@@ -9,7 +9,13 @@ function createFunctionBranch(propertyEntry) {
   }
   if (propValue && typeof propValue === 'object') {
     const childrenFunctions = Object.entries(propValue).map(e => createFunctionBranch(e));
-    return x => childrenFunctions.forEach(f => f(x[propName]));
+    return (x) => {
+      if (!x[propName]) {
+        x[propName] = {}; // eslint-disable-line no-param-reassign
+      }
+
+      childrenFunctions.forEach(f => f(x[propName]));
+    };
   }
 
   return (x) => {
