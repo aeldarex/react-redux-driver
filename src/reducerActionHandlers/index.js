@@ -1,3 +1,4 @@
+export { default as updateSectionHandler } from './updateSectionHandler';
 export { default as insertOneHandler } from './insertOneHandler';
 export { default as insertManyHandler } from './insertManyHandler';
 export { default as updateOneHandler } from './updateOneHandler';

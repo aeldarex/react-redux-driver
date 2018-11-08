@@ -1,5 +1,6 @@
 import createReducer from './utils/createReducer';
 import {
+  DRIVER_UPDATE_SECTION,
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
@@ -8,6 +9,7 @@ import {
   DRIVER_DELETE_MANY,
 } from './actionTypes';
 import {
+  updateSectionHandler,
   insertOneHandler,
   insertManyHandler,
   updateOneHandler,
@@ -17,6 +19,7 @@ import {
 } from './reducerActionHandlers';
 
 const handlers = {
+  [DRIVER_UPDATE_SECTION]: updateSectionHandler,
   [DRIVER_INSERT_ONE]: insertOneHandler,
   [DRIVER_INSERT_MANY]: insertManyHandler,
   [DRIVER_UPDATE_ONE]: updateOneHandler,
