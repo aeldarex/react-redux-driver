@@ -40,10 +40,11 @@ class TodoList extends Component {
   }
 }
 
+// Select all Todo objects with status 'open' or 'inProgress' from redux state
+const todoSelector = findMany(Todo, { status: x => x === 'open' || x === 'inProgress' });
 const mapStateToProps = (state) => {
   return {
-    // Select all Todo objects with status 'open' or 'inProgress' from redux state
-    todos: findMany(Todo, { status: x => x === 'open' || x === 'inProgress' })
+    todos: todoSelector(state)
   };
 };
 
@@ -223,9 +224,10 @@ import { Friend } from './models';
 
 // const MyComponent = ...
 
+const blueFriendSelector = findMany(Friend, { team: 'blue' });
 const mapStateToProps = state => {
   return {
-    blueFriends: findMany(Friend, { team: 'blue' })
+    blueFriends: blueFriendSelector(state)
   };
 };
 
