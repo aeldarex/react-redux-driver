@@ -1,4 +1,5 @@
 import {
+  updateSection,
   insertOne,
   insertMany,
   updateOne,
@@ -7,6 +8,7 @@ import {
   deleteMany,
 } from '../src/driverActions';
 import {
+  DRIVER_UPDATE_SECTION,
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
@@ -14,6 +16,38 @@ import {
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
 } from '../src/actionTypes';
+
+describe('updateSection', () => {
+  test('returns action with type of DRIVER_UPDATE_SECTION', () => {
+    // When
+    const result = updateSection();
+
+    // Then
+    expect(result.type).toBe(DRIVER_UPDATE_SECTION);
+  });
+
+  test('returns action with payload containing given sectionName', () => {
+    // Given
+    const sectionName = 'someSection';
+
+    // When
+    const result = updateSection(sectionName);
+
+    // Then
+    expect(result.payload.sectionName).toBe(sectionName);
+  });
+
+  test('returns action with payload containing given update', () => {
+    // Given
+    const update = {};
+
+    // When
+    const result = updateSection('someSection', update);
+
+    // Then
+    expect(result.payload.update).toBe(update);
+  });
+});
 
 describe('insertOne', () => {
   test('returns DRIVER_INSERT_ONE action', () => {

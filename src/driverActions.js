@@ -1,4 +1,5 @@
 import {
+  DRIVER_UPDATE_SECTION,
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
@@ -6,6 +7,13 @@ import {
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
 } from './actionTypes';
+
+function updateSection(sectionName, update) {
+  return {
+    type: DRIVER_UPDATE_SECTION,
+    payload: { sectionName, update },
+  };
+}
 
 function insertOne(item) {
   return {
@@ -50,5 +58,11 @@ function deleteMany(objectType, filter) {
 }
 
 export {
-  insertOne, insertMany, updateOne, updateMany, deleteOne, deleteMany,
+  updateSection,
+  insertOne,
+  insertMany,
+  updateOne,
+  updateMany,
+  deleteOne,
+  deleteMany,
 };
