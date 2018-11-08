@@ -6,53 +6,6 @@
 
 A set of reducer functions, dispatchable actions, and selector creators to simplify CRUD operations with react-redux.
 
-```javascript
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { findMany, insertOne, updateOne, deleteOne } from 'react-redux-driver';
-import { Todo } from './models';
-
-class TodoList extends Component {
-  // Insert new Todo into redux state
-  insertTodo = () => {
-    const { newTodoName } = this.state;
-    const newTodo = new Todo(newTodoName, 'open');
-    this.props.insertOne(newTodo);
-  }
-
-  // Remove selected Todo from redux state
-  removeTodo = () => {
-    const { selectedTodo } = this.state;
-    this.props.deleteOne(Todo, { id: selectedTodo.id });
-  }
-
-  // Update selected Todo in redux state with status 'done'
-  markDone = () => {
-    const { selectedTodo } = this.state;
-    this.props.updateOne(Todo, { id: selectedTodo.id }, { status: 'done' });
-  }
-
-  render() {
-    const { todos } = this.props;
-    return (
-      // render list of todos...
-    )
-  }
-}
-
-// Select all Todo objects with status 'open' or 'inProgress' from redux state
-const todoSelector = findMany(Todo, { status: x => x === 'open' || x === 'inProgress' });
-const mapStateToProps = (state) => {
-  return {
-    todos: todoSelector(state)
-  };
-};
-
-const mapDispatchToProps = { insertOne, updateOne, deleteOne };
-
-export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
-```
-
 ## Installation
 
 ```
@@ -81,9 +34,13 @@ export default rootReducer;
 
 The main takeaway is that it's important for the driverReducer to operate at the **top-level** of the state. If you are unfamiliar with the syntax above checkout out the [redux docs](https://redux.js.org/), the github for [reduce-reducers](https://github.com/redux-utilities/reduce-reducers), as well as this [stack overflow](https://stackoverflow.com/questions/38652789/correct-usage-of-reduce-reducers/44371190#44371190) which goes into detail about the differences between combineReducers and reduceReducers.
 
-## Creating a ReduxObject
+## Manipulating The State
 
-The next step is to create an object model for the data you want to store. All driver pieces operate on the assumption that the objects being persisted/read extend the ReduxObject class included in the package.
+Once the reducer is in place we're ready to start using the driver's dispatch functions to manipulate the state. But before we can start injecting our actions we need to discuss the concepts of _ReduxObject_, _filter_, and _update_ objects.
+
+## What is a ReduxObject?
+
+A ReduxObject is essentially an object model for the data you want to store. All CRUD operations operate on the assumption that the objects being persisted/read extend the ReduxObject class included in the package.
 
 ```javascript
 import { ReduxObject } from 'react-redux-driver';
@@ -98,11 +55,7 @@ class Friend extends ReduxObject {
 }
 ```
 
-The only requirement from the above code is that the class extends ReduxObject, how you instantiate or otherwise manipulate the objects is up to you. The driver will **ALWAYS** preserve the prototype when manipulating the state, so feel free to add non-primitive items to the class definitions.
-
-## Manipulating The State
-
-Once the above two items are in place we're ready to start using the driver's dispatch functions to manipulate the state. But before we can start injecting our actions we need to discuss the concepts of _filter_ and _update_ objects. For this discussion we'll utilize the example Friend object above and we'll consider the scoring object as containg two child properties, a number field named highScore and an array field named recentScores.
+The only requirement from the above code is that the class extends ReduxObject, how you instantiate or otherwise manipulate the objects is up to you. The driver will **ALWAYS** preserve the prototype when handling ReduxObject implementations, so feel free to add non-primitive items to the class definitions.
 
 ### What is a filter object?
 
@@ -155,7 +108,7 @@ As javascript is not a typed language, there is no guarantee that all of our obj
 
 ## Dispatch Actions
 
-Equipped with the knowledge of how to create filter and update objects, let's look at the dispatchable actions available to us as part of the driver.
+Equipped with the knowledge of how to create ReduxObject, filter, and update objects, let's look at the dispatchable actions available to us as part of the driver.
 
 ### Create Actions
 
@@ -171,9 +124,12 @@ The insert actions will insert one or more items into the state. If you attempt 
 ```typescript
 updateOne(objectType: typeof ReduxObject, filter: any, update: any);
 updateMany(objectType: typeof ReduxObject, filter: any, update: any);
+updateSection(sectionName: string, update: any);
 ```
 
-The update actions will update one or more items currently existing in the state. The objectType describes the type of object to be updated, the filter outlines which objects of that type should be considered, and the update itself defines the changes which should be made to the items matching the filter. If updateOne is given a filter which matches more than one object then only the first object found will be updated (note that in terms of ordering the objects are tracked by id).
+The updateOne and updateMany actions will update one or more items currently existing in the state. The objectType describes the type of object to be updated, the filter outlines which objects of that type should be considered, and the update itself defines the changes which should be made to the items matching the filter. If updateOne is given a filter which matches more than one object then only the first object found will be updated (note that in terms of ordering the objects are tracked by id).
+
+The updateSection action differs in that it's focused on updating a specific section of the state rather than doing a CRUD operation on given object(s). This is most useful when wanting to manage a state object where you will only ever want a single object. A good example of this would be storing a string token in an 'auth' section of the state. You'll never want multiple auth objects, so instead of creating a ReduxObject with the token and using insertOne, you would use updateSection and add the token to the 'auth' section of the state. This section could then be referenced with simply a 'state.auth' in your mapStateToProps.
 
 ### Delete Actions
 
@@ -186,7 +142,7 @@ The delete actions will delete one or more items currently existing in the state
 
 ### Using the Actions
 
-To use the actions, add them to your component's react-redux connect just like you would a custom dispatch function.
+To use the actions, add them to your component's mapDispatchToProps.
 
 ```javascript
 import { connect } from 'react-redux';
@@ -196,7 +152,7 @@ import { insertMany, deleteMany } from 'react-redux-driver';
 
 // const mapStateToProps = ...
 
-const mapDispatchToProps = { insertMany, deleteMany };
+const mapDispatchToProps = { updateSection, insertMany, deleteMany };
 
 export default connect(
   mapStateToProps,
@@ -215,7 +171,7 @@ findMany(objectType: typeof ReduxObject, filter: any);
 
 The find functions create selectors for finding one or more items in the state. These use [reselect](https://github.com/reduxjs/reselect) under the hood, so they will never recompute unless the section of state for a given object type changes. Additionally, because they create plain selectors, the output can be composed into other, more complex, selectors as well.
 
-To use them simply add them to your component's react-redux connect just like with the dispatch actions.
+To use them, simply add the selectors they create to your component's mapStateToProps.
 
 ```javascript
 import { connect } from 'react-redux';
