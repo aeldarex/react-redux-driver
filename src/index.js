@@ -3,6 +3,7 @@ export {
   insertMany,
   updateOne,
   updateMany,
+  updateSection,
   deleteOne,
   deleteMany,
 } from './driverActions';
