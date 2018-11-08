@@ -191,8 +191,6 @@ describe('invalid parameter cases', () => {
   });
 });
 
-// Start
-
 test('state slice for object is undefined, returns given state', () => {
   // Given
   class TestObject extends ReduxObject {}
