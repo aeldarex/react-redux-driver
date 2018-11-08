@@ -1,5 +1,6 @@
 import { findOne, findMany } from '../src/selectors';
 import {
+  updateSection,
   insertOne,
   insertMany,
   updateOne,
@@ -420,5 +421,27 @@ test('insert objects using insertMany action, then update all with new nested fi
   expect(locatedObjects).toContainEqual({
     ...testObject2,
     info: { type: 'greeting' },
+  });
+});
+
+test('update section of state with updateSection, then check state for updates', () => {
+  // Given
+  let state = {
+    auth: {
+      token: 'someToken',
+      userId: 'someId',
+    },
+  };
+
+  // When
+  const updateAction = updateSection('auth', { token: 'newToken' });
+  state = reducer(state, updateAction);
+
+  // Then
+  expect(state).toEqual({
+    auth: {
+      token: 'newToken',
+      userId: 'someId',
+    },
   });
 });
