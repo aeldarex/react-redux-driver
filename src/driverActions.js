@@ -8,6 +8,10 @@ import {
   DRIVER_DELETE_MANY,
 } from './actionTypes';
 
+function publishAction(type, payload) {
+  return { type, payload };
+}
+
 function updateSection(sectionName, update) {
   return {
     type: DRIVER_UPDATE_SECTION,
@@ -58,6 +62,7 @@ function deleteMany(objectType, filter) {
 }
 
 export {
+  publishAction,
   updateSection,
   insertOne,
   insertMany,

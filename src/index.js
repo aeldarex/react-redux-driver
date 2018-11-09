@@ -1,9 +1,10 @@
 export {
+  publishAction,
+  updateSection,
   insertOne,
   insertMany,
   updateOne,
   updateMany,
-  updateSection,
   deleteOne,
   deleteMany,
 } from './driverActions';

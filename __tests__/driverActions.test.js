@@ -1,4 +1,5 @@
 import {
+  publishAction,
   updateSection,
   insertOne,
   insertMany,
@@ -16,6 +17,30 @@ import {
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
 } from '../src/actionTypes';
+
+describe('publishAction', () => {
+  test('returns action with given type', () => {
+    // Given
+    const actionType = 'SOME_ACTION_NAME';
+
+    // When
+    const result = publishAction(actionType);
+
+    // Then
+    expect(result.type).toBe(actionType);
+  });
+
+  test('returns action with given payload', () => {
+    // Given
+    const payload = {};
+
+    // When
+    const result = publishAction('SOME_ACTION_NAME', payload);
+
+    // Then
+    expect(result.payload).toBe(payload);
+  });
+});
 
 describe('updateSection', () => {
   test('returns action with type of DRIVER_UPDATE_SECTION', () => {
