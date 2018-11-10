@@ -20,6 +20,16 @@ function createInsertPayload(reduxObject) {
   return { sectionName, object };
 }
 
+function createFilterBasedPayload(objectType, filter, update) {
+  if (!isReduxObjectType(objectType)) {
+    return {};
+  }
+
+  const sectionName = objectType.stateSlice;
+
+  return { sectionName, filter, update };
+}
+
 function insertOne(reduxObject) {
   const payload = createInsertPayload(reduxObject);
 
@@ -41,30 +51,38 @@ function insertMany(reduxObjects) {
 }
 
 function updateOne(objectType, filter, update) {
+  const payload = createFilterBasedPayload(objectType, filter, update);
+
   return {
     type: DRIVER_UPDATE_ONE,
-    payload: { objectType, filter, update },
+    payload,
   };
 }
 
 function updateMany(objectType, filter, update) {
+  const payload = createFilterBasedPayload(objectType, filter, update);
+
   return {
     type: DRIVER_UPDATE_MANY,
-    payload: { objectType, filter, update },
+    payload,
   };
 }
 
 function deleteOne(objectType, filter) {
+  const payload = createFilterBasedPayload(objectType, filter);
+
   return {
     type: DRIVER_DELETE_ONE,
-    payload: { objectType, filter },
+    payload,
   };
 }
 
 function deleteMany(objectType, filter) {
+  const payload = createFilterBasedPayload(objectType, filter);
+
   return {
     type: DRIVER_DELETE_MANY,
-    payload: { objectType, filter },
+    payload,
   };
 }
 

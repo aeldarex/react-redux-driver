@@ -143,37 +143,27 @@ describe('updateOne', () => {
     expect(result.type).toBe(DRIVER_UPDATE_ONE);
   });
 
-  test('returns action with payload containing given object type', () => {
-    // Given
-    const objectType = {};
-
+  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
     // When
-    const result = updateOne(objectType);
+    const result = updateOne({}, { propA: 5 }, { propA: 10 });
 
-    // Then
-    expect(result.payload.objectType).toBe(objectType);
+    // THen
+    expect(result.payload).toEqual({});
   });
 
-  test('returns action with payload containing given filter', () => {
+  test('returns action with payload containing given objectType stateSlice as sectionName, filter, and update objects', () => {
     // Given
-    const filter = {};
+    class TestObject extends ReduxObject {}
 
     // When
-    const result = updateOne({}, filter);
+    const result = updateOne(TestObject, { propA: 5 }, { propB: 'abc' });
 
     // Then
-    expect(result.payload.filter).toBe(filter);
-  });
-
-  test('returns action with payload containing given update', () => {
-    // Given
-    const update = {};
-
-    // When
-    const result = updateOne({}, {}, update);
-
-    // Then
-    expect(result.payload.update).toBe(update);
+    expect(result.payload).toEqual({
+      sectionName: TestObject.stateSlice,
+      filter: { propA: 5 },
+      update: { propB: 'abc' },
+    });
   });
 });
 
@@ -186,37 +176,27 @@ describe('updateMany', () => {
     expect(result.type).toBe(DRIVER_UPDATE_MANY);
   });
 
-  test('returns action with payload containing given object type', () => {
-    // Given
-    const objectType = {};
-
+  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
     // When
-    const result = updateMany(objectType);
+    const result = updateMany({}, { propA: 5 }, { propA: 10 });
 
-    // Then
-    expect(result.payload.objectType).toBe(objectType);
+    // THen
+    expect(result.payload).toEqual({});
   });
 
-  test('returns action with payload containing given filter', () => {
+  test('returns action with payload containing given objectType stateSlice as sectionName, filter, and update objects', () => {
     // Given
-    const filter = {};
+    class TestObject extends ReduxObject {}
 
     // When
-    const result = updateMany({}, filter);
+    const result = updateMany(TestObject, { propA: 5 }, { propB: 'abc' });
 
     // Then
-    expect(result.payload.filter).toBe(filter);
-  });
-
-  test('returns action with payload containing given update', () => {
-    // Given
-    const update = {};
-
-    // When
-    const result = updateMany({}, {}, update);
-
-    // Then
-    expect(result.payload.update).toBe(update);
+    expect(result.payload).toEqual({
+      sectionName: TestObject.stateSlice,
+      filter: { propA: 5 },
+      update: { propB: 'abc' },
+    });
   });
 });
 
@@ -229,26 +209,26 @@ describe('deleteOne', () => {
     expect(result.type).toBe(DRIVER_DELETE_ONE);
   });
 
-  test('returns action with payload containing given object type', () => {
-    // Given
-    const objectType = {};
-
+  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
     // When
-    const result = deleteOne(objectType);
+    const result = deleteOne({}, { propA: 5 });
 
-    // Then
-    expect(result.payload.objectType).toBe(objectType);
+    // THen
+    expect(result.payload).toEqual({});
   });
 
-  test('returns action with payload containing given filter', () => {
+  test('returns action with payload containing given objectType stateSlice as sectionName and the filter object', () => {
     // Given
-    const filter = {};
+    class TestObject extends ReduxObject {}
 
     // When
-    const result = deleteOne({}, filter);
+    const result = deleteOne(TestObject, { propA: 5 });
 
     // Then
-    expect(result.payload.filter).toBe(filter);
+    expect(result.payload).toEqual({
+      sectionName: TestObject.stateSlice,
+      filter: { propA: 5 },
+    });
   });
 });
 
@@ -261,25 +241,25 @@ describe('deleteMany', () => {
     expect(result.type).toBe(DRIVER_DELETE_MANY);
   });
 
-  test('returns action with payload containing given object type', () => {
-    // Given
-    const objectType = {};
-
+  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
     // When
-    const result = deleteMany(objectType);
+    const result = deleteMany({}, { propA: 5 });
 
-    // Then
-    expect(result.payload.objectType).toBe(objectType);
+    // THen
+    expect(result.payload).toEqual({});
   });
 
-  test('returns action with payload containing given filter', () => {
+  test('returns action with payload containing given objectType stateSlice as sectionName and the filter object', () => {
     // Given
-    const filter = {};
+    class TestObject extends ReduxObject {}
 
     // When
-    const result = deleteMany({}, filter);
+    const result = deleteMany(TestObject, { propA: 5 });
 
     // Then
-    expect(result.payload.filter).toBe(filter);
+    expect(result.payload).toEqual({
+      sectionName: TestObject.stateSlice,
+      filter: { propA: 5 },
+    });
   });
 });
