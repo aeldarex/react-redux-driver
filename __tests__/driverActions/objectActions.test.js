@@ -1,78 +1,20 @@
 import {
-  publishAction,
-  updateSection,
   insertOne,
   insertMany,
   updateOne,
   updateMany,
   deleteOne,
   deleteMany,
-} from '../src/driverActions';
+} from '../../src/driverActions/objectActions';
 import {
-  DRIVER_UPDATE_SECTION,
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
   DRIVER_UPDATE_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
-} from '../src/actionTypes';
-
-describe('publishAction', () => {
-  test('returns action with given type', () => {
-    // Given
-    const actionType = 'SOME_ACTION_NAME';
-
-    // When
-    const result = publishAction(actionType);
-
-    // Then
-    expect(result.type).toBe(actionType);
-  });
-
-  test('returns action with given payload', () => {
-    // Given
-    const payload = {};
-
-    // When
-    const result = publishAction('SOME_ACTION_NAME', payload);
-
-    // Then
-    expect(result.payload).toBe(payload);
-  });
-});
-
-describe('updateSection', () => {
-  test('returns action with type of DRIVER_UPDATE_SECTION', () => {
-    // When
-    const result = updateSection();
-
-    // Then
-    expect(result.type).toBe(DRIVER_UPDATE_SECTION);
-  });
-
-  test('returns action with payload containing given sectionName', () => {
-    // Given
-    const sectionName = 'someSection';
-
-    // When
-    const result = updateSection(sectionName);
-
-    // Then
-    expect(result.payload.sectionName).toBe(sectionName);
-  });
-
-  test('returns action with payload containing given update', () => {
-    // Given
-    const update = {};
-
-    // When
-    const result = updateSection('someSection', update);
-
-    // Then
-    expect(result.payload.update).toBe(update);
-  });
-});
+} from '../../src/actionTypes';
+import ReduxObject from '../../src/ReduxObject';
 
 describe('insertOne', () => {
   test('returns DRIVER_INSERT_ONE action', () => {
@@ -83,15 +25,44 @@ describe('insertOne', () => {
     expect(result.type).toBe(DRIVER_INSERT_ONE);
   });
 
-  test('returns action with given object as payload', () => {
+  test('if given object is not an instance of ReduxObject, returns action with empty payload', () => {
     // Given
-    const item = {};
+    const item = { propA: 5, propB: 'hello' };
 
     // When
     const result = insertOne(item);
 
     // Then
-    expect(result.payload).toBe(item);
+    expect(result.payload).toEqual({});
+  });
+
+  test('if given object is an instance of ReduxObject, returns action with sectionName and plain copy of object', () => {
+    // Given
+    class TestObject extends ReduxObject {
+      constructor(propA, propB) {
+        super();
+        this.propA = propA;
+        this.propB = propB;
+      }
+    }
+
+    const item = new TestObject(5, { propC: 'hello' });
+
+    // When
+    const result = insertOne(item);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName: TestObject.stateSlice,
+      object: {
+        id: item.id,
+        propA: 5,
+        propB: {
+          propC: 'hello',
+        },
+      },
+    });
+    expect(result.payload.object).not.toBe(item);
   });
 });
 
@@ -104,15 +75,62 @@ describe('insertMany', () => {
     expect(result.type).toBe(DRIVER_INSERT_MANY);
   });
 
-  test('returns action with given items as payload', () => {
-    // Given
-    const items = [{}, {}];
-
+  test('if given input is not an array, returns action with payload of empty array', () => {
     // When
-    const result = insertMany(items);
+    const result = insertMany({});
 
     // Then
-    expect(result.payload).toBe(items);
+    expect(result.payload).toEqual([]);
+  });
+
+  test('if given input is an array of ReduxObjects, returns action with payload being an array of object copies and their section names', () => {
+    // Given
+    class TestObjectA extends ReduxObject {
+      constructor(propA, propB) {
+        super();
+        this.propA = propA;
+        this.propB = propB;
+      }
+    }
+
+    class TestObjectB extends ReduxObject {
+      constructor(propC, propD) {
+        super();
+        this.propC = propC;
+        this.propD = propD;
+      }
+    }
+
+    const item1 = new TestObjectA(5, { propY: 'hello' });
+    const item2 = new TestObjectB('goodbye', { propZ: 25 });
+
+    // When
+    const result = insertMany([item1, item2]);
+
+    // Then
+    expect(result.payload.length).toBe(2);
+    expect(result.payload).toContainEqual({
+      sectionName: TestObjectA.stateSlice,
+      object: {
+        id: item1.id,
+        propA: 5,
+        propB: {
+          propY: 'hello',
+        },
+      },
+    });
+    expect(result.payload).toContainEqual({
+      sectionName: TestObjectB.stateSlice,
+      object: {
+        id: item2.id,
+        propC: 'goodbye',
+        propD: {
+          propZ: 25,
+        },
+      },
+    });
+    expect(result.payload).not.toContain(item1);
+    expect(result.payload).not.toContain(item2);
   });
 });
 

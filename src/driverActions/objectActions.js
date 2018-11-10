@@ -1,35 +1,42 @@
 import {
-  DRIVER_UPDATE_SECTION,
   DRIVER_INSERT_ONE,
   DRIVER_INSERT_MANY,
   DRIVER_UPDATE_ONE,
   DRIVER_UPDATE_MANY,
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
-} from './actionTypes';
+} from '../actionTypes';
+import ReduxObject from '../ReduxObject';
+import isReduxObjectType from '../utils/isReduxObjectType';
 
-function publishAction(type, payload) {
-  return { type, payload };
+function createInsertPayload(reduxObject) {
+  if (!(reduxObject instanceof ReduxObject)) {
+    return {};
+  }
+
+  const sectionName = reduxObject.constructor.stateSlice;
+  const object = JSON.parse(JSON.stringify(reduxObject));
+
+  return { sectionName, object };
 }
 
-function updateSection(sectionName, update) {
-  return {
-    type: DRIVER_UPDATE_SECTION,
-    payload: { sectionName, update },
-  };
-}
+function insertOne(reduxObject) {
+  const payload = createInsertPayload(reduxObject);
 
-function insertOne(item) {
   return {
     type: DRIVER_INSERT_ONE,
-    payload: item,
+    payload,
   };
 }
 
-function insertMany(items) {
+function insertMany(reduxObjects) {
+  const payload = Array.isArray(reduxObjects)
+    ? reduxObjects.map(createInsertPayload)
+    : [];
+
   return {
     type: DRIVER_INSERT_MANY,
-    payload: items,
+    payload,
   };
 }
 
@@ -62,12 +69,5 @@ function deleteMany(objectType, filter) {
 }
 
 export {
-  publishAction,
-  updateSection,
-  insertOne,
-  insertMany,
-  updateOne,
-  updateMany,
-  deleteOne,
-  deleteMany,
+  insertOne, insertMany, updateOne, updateMany, deleteOne, deleteMany,
 };
