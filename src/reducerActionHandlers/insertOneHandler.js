@@ -1,35 +1,40 @@
 import warning from 'warning';
-import ReduxObject from '../ReduxObject';
+import isPopulatedString from '../utils/isPopulatedString';
 
-function insertOneHandler(state, reduxObject) {
-  if (!state || !(reduxObject instanceof ReduxObject)) {
+function insertOneHandler(state, payload) {
+  const { sectionName, object } = payload || {};
+  if (!state || !isPopulatedString(sectionName) || !object || !object.id) {
     warning(
       state,
       'A DRIVER_INSERT_ONE action was ignored because the given state was null or undefined.',
     );
     warning(
-      reduxObject instanceof ReduxObject,
-      'A DRIVER_INSERT_ONE action was ignored because the payload was not an instance of a ReduxObject.',
+      isPopulatedString(sectionName),
+      'A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+        + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+    );
+    warning(
+      object && object.id,
+      'A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
+        + 'Did you try do an insert with something that was not an instance of ReduxObject?',
     );
 
     return state || {};
   }
 
-  const { stateSlice } = reduxObject.constructor;
-  const currentTable = state[stateSlice] ? state[stateSlice] : {};
-
-  if (currentTable[reduxObject.id]) {
+  const currentTable = state[sectionName] ? state[sectionName] : {};
+  if (currentTable[object.id]) {
     return state;
   }
 
   const updatedTable = {
     ...currentTable,
-    [reduxObject.id]: reduxObject,
+    [object.id]: object,
   };
 
   return {
     ...state,
-    [stateSlice]: updatedTable,
+    [sectionName]: updatedTable,
   };
 }
 

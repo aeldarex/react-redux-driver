@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
-import ReduxObject from '../../src/ReduxObject';
 
 describe('invalid parameter cases', () => {
   let errorStub;
@@ -57,32 +56,125 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if given payload is undefined, produces warning', () => {
+  test('if payload is missing, produces sectionName warning', () => {
     // When
     insertOneHandler({});
 
     // Then
     expect(
       errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload was not an instance of a ReduxObject.',
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
       ),
     ).toBe(true);
   });
 
-  test('if given payload is not an instance of a ReduxObject, produces warning', () => {
+  test('if payload is missing, produces object warning', () => {
+    // When
+    insertOneHandler({});
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if payload is null, produces sectionName warning', () => {
+    // When
+    insertOneHandler({}, null);
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if payload is null, produces object warning', () => {
+    // When
+    insertOneHandler({}, null);
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if sectionName is missing from payload, produces sectionName warning', () => {
     // When
     insertOneHandler({}, {});
 
     // Then
     expect(
       errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload was not an instance of a ReduxObject.',
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if sectionName is not a string in payload, produces sectionName warning', () => {
+    // When
+    insertOneHandler({}, { sectionName: {} });
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if sectionName is empty string in payload, produces sectionName warning', () => {
+    // When
+    insertOneHandler({}, { sectionName: '' });
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if object is missing from payload, produces warning', () => {
+    // When
+    insertOneHandler({}, {});
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
+      ),
+    ).toBe(true);
+  });
+
+  test('if object in payload does not have an id, produces warning', () => {
+    // When
+    insertOneHandler({}, { object: {} });
+
+    // Then
+    expect(
+      errorStub.calledWith(
+        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
+          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
       ),
     ).toBe(true);
   });
 
   describe('given defined state', () => {
-    test('if given payload is undefined, returns given state object', () => {
+    test('if payload is missing, returns given state object', () => {
       // Given
       const state = {};
 
@@ -93,82 +185,156 @@ describe('invalid parameter cases', () => {
       expect(updatedState).toBe(state);
     });
 
-    test('if given payload is not an instance of ReduxObject, returns given state object', () => {
+    test('if payload is null, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = insertOneHandler(existingState, {});
+      const updatedState = insertOneHandler(state, null);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
+    });
+
+    describe('given defined payload', () => {
+      test('if sectionName is missing from payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = insertOneHandler(state, {});
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is not a string in payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = insertOneHandler(state, { sectionName: {} });
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is empty string in payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = insertOneHandler(state, { sectionName: '' });
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      describe('given populated sectionName', () => {
+        test('if object is missing from payload, returns given state object', () => {
+          // Given
+          const state = {};
+
+          // When
+          const updatedState = insertOneHandler(state, {
+            sectionName: 'SomeSection',
+          });
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+
+        test('if object is missing an id in payload, returns given state object', () => {
+          // Given
+          const state = {};
+
+          // When
+          const updatedState = insertOneHandler(state, {
+            sectionName: 'SomeSection',
+            object: {},
+          });
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+      });
     });
   });
 });
 
-test('state slice for object is undefined, creates state slice and inserts given ReduxObject into state', () => {
+test('state slice for sectionName is undefined, creates state slice and inserts given object into state', () => {
   // Given
-  class TestObject extends ReduxObject {}
-  const testObject = new TestObject();
-
+  const sectionName = 'SomeSection';
   const existingState = {};
+  const object = { id: '1a', propA: 5 };
 
   // When
-  const updatedState = insertOneHandler(existingState, testObject);
+  const updatedState = insertOneHandler(existingState, {
+    sectionName,
+    object,
+  });
 
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
-      [testObject.id]: testObject,
+    [sectionName]: {
+      [object.id]: object,
     },
   });
 });
 
 test('object with id does not exist in current state slice, adds object to state slice', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'SomeSection';
 
-  const existingTestObject1 = new TestObject();
-  const existingTestObject2 = new TestObject();
+  const existingObject1 = { id: '1a', propA: 1 };
+  const existingObject2 = { id: '1b', propA: 2 };
   const existingStateSlice = {
-    [existingTestObject1.id]: existingTestObject1,
-    [existingTestObject2.id]: existingTestObject2,
+    [existingObject1.id]: existingObject1,
+    [existingObject2.id]: existingObject2,
   };
   const existingState = {
-    [TestObject.stateSlice]: existingStateSlice,
+    [sectionName]: existingStateSlice,
   };
 
-  const testObject = new TestObject();
+  const newObject = { id: '1c', propA: 3 };
 
   // When
-  const updatedState = insertOneHandler(existingState, testObject);
+  const updatedState = insertOneHandler(existingState, {
+    sectionName,
+    object: newObject,
+  });
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(existingStateSlice);
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
+    [sectionName]: {
       ...existingStateSlice,
-      [testObject.id]: testObject,
+      [newObject.id]: newObject,
     },
   });
 });
 
 test('and object with id does exist, returns state without changes', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'SomeSection';
 
-  const existingTestObject = new TestObject();
+  const existingObject1 = { id: '1a', propA: 1 };
+  const existingObject2 = { id: '1b', propA: 2 };
   const existingStateSlice = {
-    [existingTestObject.id]: existingTestObject,
+    [existingObject1.id]: existingObject1,
+    [existingObject2.id]: existingObject2,
   };
   const existingState = {
-    [TestObject.stateSlice]: existingStateSlice,
+    [sectionName]: existingStateSlice,
   };
 
   // When
-  const updatedState = insertOneHandler(existingState, existingTestObject);
+  const updatedState = insertOneHandler(existingState, {
+    sectionName,
+    object: existingObject2,
+  });
 
   // Then
   expect(updatedState).toBe(existingState);
