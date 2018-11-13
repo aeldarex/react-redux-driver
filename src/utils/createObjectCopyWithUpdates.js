@@ -14,7 +14,7 @@ function createObjectCopyWithUpdates(object, updateFunction) {
     return null;
   }
 
-  return Object.assign(new object.constructor(), objectCopy);
+  return objectCopy;
 }
 
 export default createObjectCopyWithUpdates;

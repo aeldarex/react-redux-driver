@@ -3,22 +3,17 @@ import createObjectCopyWithUpdates from '../../src/utils/createObjectCopyWithUpd
 
 test('returns copy of given item with updates applied', () => {
   // Given
-  class SomeObject {}
-
-  const obj1 = new SomeObject();
-  obj1.propA = 10;
-  obj1.propB = { propC: 5 };
+  const object1 = { propA: 10, propB: { propC: 5 } };
 
   const updateFunction = (x) => {
     x.propA = 5; // eslint-disable-line no-param-reassign
   };
 
   // When
-  const result = createObjectCopyWithUpdates(obj1, updateFunction);
+  const result = createObjectCopyWithUpdates(object1, updateFunction);
 
   // Then
-  expect(result).not.toBe(obj1);
-  expect(result).toBeInstanceOf(SomeObject);
+  expect(result).not.toBe(object1);
   expect(result).toEqual({ propA: 5, propB: { propC: 5 } });
 });
 
