@@ -2,7 +2,7 @@ import warning from 'warning';
 import isPopulatedString from '../utils/isPopulatedString';
 import isObjectWithId from '../utils/isObjectWithId';
 
-const invalidPayloadWarning = `A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
+const invalidInputsWarning = `A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
 - Payload must be an array.`;
 const invalidInsertPayloadWarning = `An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
@@ -11,7 +11,7 @@ const invalidInsertPayloadWarning = `An insert payload sent as part of a DRIVER_
 
 function insertManyHandler(state, insertPayloads) {
   if (!state || !Array.isArray(insertPayloads)) {
-    warning(false, invalidPayloadWarning);
+    warning(false, invalidInputsWarning);
     return state || {};
   }
 

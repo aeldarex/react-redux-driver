@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
 
-const invalidPayloadWarning = `Warning: A DRIVER_INSERT_ONE action was ignored because it's inputs did not meet the following criteria:
+const invalidInputsWarning = `Warning: A DRIVER_INSERT_ONE action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
 - Payload must contain a sectionName string property with length greater than 0.
 - Payload must contain an object property with an id.`;
@@ -42,7 +42,7 @@ describe('invalid parameter cases', () => {
     insertOneHandler();
 
     // Then
-    expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+    expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
@@ -73,7 +73,7 @@ describe('invalid parameter cases', () => {
       insertOneHandler({});
 
       // Then
-      expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+      expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
     });
 
     describe('given defined payload', () => {
@@ -104,7 +104,7 @@ describe('invalid parameter cases', () => {
         insertOneHandler({}, {});
 
         // Then
-        expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+        expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
       });
 
       describe('given populated sectionName', () => {
@@ -140,7 +140,7 @@ describe('invalid parameter cases', () => {
           insertOneHandler({}, { sectionName: 'SomeSection' });
 
           // Then
-          expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+          expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
         });
       });
     });

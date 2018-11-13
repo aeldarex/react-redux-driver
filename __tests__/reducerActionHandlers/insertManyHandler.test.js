@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import insertManyHandler from '../../src/reducerActionHandlers/insertManyHandler';
 
-const invalidPayloadWarning = `Warning: A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
+const invalidInputsWarning = `Warning: A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
 - Payload must be an array.`;
 const invalidInsertPayloadWarning = `Warning: An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
@@ -44,7 +44,7 @@ describe('invalid parameter cases', () => {
     insertManyHandler();
 
     // Then
-    expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+    expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
@@ -75,7 +75,7 @@ describe('invalid parameter cases', () => {
       insertManyHandler({});
 
       // Then
-      expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+      expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
     });
   });
 });
