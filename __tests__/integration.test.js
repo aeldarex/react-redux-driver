@@ -330,7 +330,7 @@ test('insert objects using insertMany action, then get an item with findOne', ()
   const locatedObject = selector(state);
 
   // Then
-  expect(locatedObject).toBe(testObject2);
+  expect(locatedObject).toEqual(testObject2);
 });
 
 test('insert objects using insertMany action, then update some using updateMany, then get all items with findMany', () => {
