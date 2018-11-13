@@ -10,6 +10,7 @@ import {
 } from '../src/driverActions';
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
+import ReduxSection from '../src/ReduxSection';
 
 test('inserted objects using insertOne action can be located with access driver findMany selector', () => {
   // Given
@@ -426,20 +427,22 @@ test('insert objects using insertMany action, then update all with new nested fi
 
 test('update section of state with updateSection, then check state for updates', () => {
   // Given
+  class Auth extends ReduxSection {}
+
   let state = {
-    auth: {
+    [Auth.stateSlice]: {
       token: 'someToken',
       userId: 'someId',
     },
   };
 
   // When
-  const updateAction = updateSection('auth', { token: 'newToken' });
+  const updateAction = updateSection(Auth, { token: 'newToken' });
   state = reducer(state, updateAction);
 
   // Then
   expect(state).toEqual({
-    auth: {
+    [Auth.stateSlice]: {
       token: 'newToken',
       userId: 'someId',
     },
