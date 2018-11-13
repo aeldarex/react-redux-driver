@@ -1,6 +1,9 @@
 import sinon from 'sinon';
 import deleteManyHandler from '../../src/reducerActionHandlers/deleteManyHandler';
-import ReduxObject from '../../src/ReduxObject';
+
+const invalidInputsWarning = `Warning: A DRIVER_DELETE_MANY action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.`;
 
 describe('invalid parameter cases', () => {
   let errorStub;
@@ -17,36 +20,12 @@ describe('invalid parameter cases', () => {
     errorStub.restore();
   });
 
-  test('if state is undefined, produces warning', () => {
-    // When
-    deleteManyHandler();
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_DELETE_MANY action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
-  });
-
   test('if state is undefined, returns empty object', () => {
     // When
     const updatedState = deleteManyHandler();
 
     // Then
     expect(updatedState).toEqual({});
-  });
-
-  test('if state is null, produces warning', () => {
-    // When
-    deleteManyHandler(null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_DELETE_MANY action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
   });
 
   test('if state is null, returns empty object', () => {
@@ -57,64 +36,86 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if payload objectType is undefined, produces warning', () => {
+  test('if state is invalid, publishes warning', () => {
     // When
-    deleteManyHandler({}, {});
+    deleteManyHandler();
 
     // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload objectType is object which does not extend ReduxObject, produces warning', () => {
-    // When
-    deleteManyHandler({}, { objectType: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
-      ),
-    ).toBe(true);
+    expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
-    test('if payload objectType is undefined, returns given state', () => {
+    test('if payload is missing, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = deleteManyHandler(existingState, {});
+      const updatedState = deleteManyHandler(state);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
-    test('if payload objectType does not extend ReduxObject, returns given state', () => {
+    test('if payload is null, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = deleteManyHandler(existingState, { objectType: {} });
+      const updatedState = deleteManyHandler(state, null);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
+    });
+
+    test('if payload is invalid, publishes warning', () => {
+      // When
+      deleteManyHandler({});
+
+      // Then
+      expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+    });
+
+    describe('given defined payload', () => {
+      test('if sectionName is missing from payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = deleteManyHandler(state, {});
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is empty string in payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = deleteManyHandler(state, { sectionName: '' });
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is invalid, publishes warning', () => {
+        // When
+        deleteManyHandler({}, {});
+
+        // Then
+        expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+      });
     });
   });
 });
 
-test('state slice for object is undefined, returns given state', () => {
+test('state slice for sectionName is undefined, returns given state', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
   const existingState = {};
 
   // When
   const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
+    sectionName: 'SomeSectionName',
   });
 
   // Then
@@ -123,129 +124,97 @@ test('state slice for object is undefined, returns given state', () => {
 
 test('state slice for object is empty, returns given state', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
-  const existingState = { [TestObject.stateSlice]: {} };
+  const sectionName = 'SomeSectionName';
+  const existingState = { [sectionName]: {} };
 
   // When
   const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
   });
 
   // Then
   expect(updatedState).toBe(existingState);
 });
 
-// Start
-
-test('and filter is undefined, deletes all objects from state', () => {
+test('state slice populated and filter is undefined, deletes all objects in state slice', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'SomeSectionName';
 
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
+  const object1 = { id: '1a' };
+  const object2 = { id: '1b' };
+  const existingStateSlice = {
+    [object1.id]: object1,
+    [object2.id]: object2,
+  };
   const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-    },
+    [sectionName]: existingStateSlice,
   };
 
   // When
   const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
   });
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(
-    existingState[TestObject.stateSlice],
-  );
-  expect(updatedState).toEqual({ [TestObject.stateSlice]: {} });
-});
-
-test('and filter is null, deletes all objects from state', () => {
-  // Given
-  class TestObject extends ReduxObject {}
-
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
-  const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-    },
-  };
-
-  // When
-  const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
-    filter: null,
-  });
-
-  // Then
-  expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(
-    existingState[TestObject.stateSlice],
-  );
-  expect(updatedState).toEqual({ [TestObject.stateSlice]: {} });
-});
-
-test('and matching objects exists, deletes all object matching filter', () => {
-  // Given
-  class TestObject extends ReduxObject {
-    constructor(propA) {
-      super();
-      this.propA = propA;
-    }
-  }
-
-  const testObject1 = new TestObject(1);
-  const testObject2 = new TestObject(2);
-  const testObject3 = new TestObject(2);
-  const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-      [testObject3.id]: testObject3,
-    },
-  };
-
-  // When
-  const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
-    filter: { propA: 2 },
-  });
-
-  // Then
-  expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(
-    existingState[TestObject.stateSlice],
-  );
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-    },
+    [sectionName]: {},
   });
 });
 
-test('but no objects match filter, returns given state', () => {
+test('objects exist which match filter, deletes all objects matching filter', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'SomeSectionName';
 
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
+  const object1 = { id: '1a', propA: 'hello' };
+  const object2 = { id: '1b', propA: 'goodbye' };
+  const object3 = { id: '1c', propA: 'hello' };
+  const existingStateSlice = {
+    [object1.id]: object1,
+    [object2.id]: object2,
+    [object3.id]: object3,
+  };
   const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-    },
+    [sectionName]: existingStateSlice,
   };
 
   // When
   const updatedState = deleteManyHandler(existingState, {
-    objectType: TestObject,
-    filter: { propA: 2 },
+    sectionName,
+    filter: { propA: 'hello' },
+  });
+
+  // Then
+  expect(updatedState).not.toBe(existingState);
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
+  expect(updatedState).toEqual({
+    [sectionName]: {
+      [object2.id]: object2,
+    },
+  });
+});
+
+test('no objects match filter, returns given state', () => {
+  // Given
+  const sectionName = 'SomeSectionName';
+
+  const object1 = { id: '1a' };
+  const object2 = { id: '1b' };
+  const object3 = { id: '1c' };
+  const existingStateSlice = {
+    [object1.id]: object1,
+    [object2.id]: object2,
+    [object3.id]: object3,
+  };
+  const existingState = {
+    [sectionName]: existingStateSlice,
+  };
+
+  // When
+  const updatedState = deleteManyHandler(existingState, {
+    sectionName,
+    filter: { id: '1d' },
   });
 
   // Then

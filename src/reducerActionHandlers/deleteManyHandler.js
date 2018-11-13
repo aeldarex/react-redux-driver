@@ -1,23 +1,20 @@
 import warning from 'warning';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
-import isReduxObjectType from '../utils/isReduxObjectType';
 import { filterMany } from '../sliceInteraction';
+import isPopulatedString from '../utils/isPopulatedString';
 
-function deleteManyHandler(state, { objectType, filter } = {}) {
-  if (!state || !isReduxObjectType(objectType)) {
-    warning(
-      state,
-      'A DRIVER_DELETE_MANY action was ignored because the given state was null or undefined.',
-    );
-    warning(
-      isReduxObjectType(objectType),
-      "A DRIVER_DELETE_MANY action was ignored because the payload's objectType does not extend ReduxObject.",
-    );
+const invalidInputsWarning = `A DRIVER_DELETE_MANY action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.`;
+
+function deleteManyHandler(state, payload) {
+  const { sectionName, filter } = payload || {};
+  if (!state || !isPopulatedString(sectionName)) {
+    warning(false, invalidInputsWarning);
     return state || {};
   }
 
-  const { stateSlice } = objectType;
-  const currentTable = state[stateSlice];
+  const currentTable = state[sectionName];
   if (!isObjectWithOwnProps(currentTable)) {
     return state;
   }
@@ -40,7 +37,7 @@ function deleteManyHandler(state, { objectType, filter } = {}) {
 
   return {
     ...state,
-    [stateSlice]: updatedTable,
+    [sectionName]: updatedTable,
   };
 }
 
