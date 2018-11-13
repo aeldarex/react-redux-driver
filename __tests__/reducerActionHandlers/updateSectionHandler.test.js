@@ -1,6 +1,11 @@
 import sinon from 'sinon';
 import updateSectionHandler from '../../src/reducerActionHandlers/updateSectionHandler';
 
+const invalidInputsWarning = `Warning: A DRIVER_UPDATE_SECTION action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an update object property with at least one child property.`;
+
 describe('invalid parameter cases', () => {
   let errorStub;
 
@@ -16,36 +21,12 @@ describe('invalid parameter cases', () => {
     errorStub.restore();
   });
 
-  test('if state is undefined, produces warning', () => {
-    // When
-    updateSectionHandler();
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_UPDATE_SECTION action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
-  });
-
   test('if state is undefined, returns empty object', () => {
     // When
     const updatedState = updateSectionHandler();
 
     // Then
     expect(updatedState).toEqual({});
-  });
-
-  test('if state is null, produces warning', () => {
-    // When
-    updateSectionHandler(null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_UPDATE_SECTION action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
   });
 
   test('if state is null, returns empty object', () => {
@@ -56,156 +37,116 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if payload sectionName is undefined, produces warning', () => {
+  test('if state is invalid, publishes warning', () => {
     // When
-    updateSectionHandler({}, {});
+    updateSectionHandler();
 
     // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's sectionName was not a string with length > 0.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload sectionName is not a string, produces warning', () => {
-    // When
-    updateSectionHandler({}, { sectionName: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's sectionName was not a string with length > 0.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload sectionName is an empty string, produces warning', () => {
-    // When
-    updateSectionHandler({}, { sectionName: '' });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's sectionName was not a string with length > 0.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is undefined, produces warning', () => {
-    // When
-    updateSectionHandler({}, {});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is null, produces warning', () => {
-    // When
-    updateSectionHandler({}, { update: null });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is empty, produces warning', () => {
-    // When
-    updateSectionHandler({}, { update: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_SECTION action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
+    expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
-    test('if payload sectionName is undefined, returns given state', () => {
+    test('if payload is missing, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = updateSectionHandler(existingState, {});
+      const updatedState = updateSectionHandler(state);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
-    test('if payload sectionName is not a string, returns given state', () => {
+    test('if payload is null, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = updateSectionHandler(existingState, {
-        sectionName: {},
-      });
+      const updatedState = updateSectionHandler(state, null);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
-    test('if payload sectionName is an empty string, returns given state', () => {
-      // Given
-      const existingState = {};
-
+    test('if payload is invalid, publishes warning', () => {
       // When
-      const updatedState = updateSectionHandler(existingState, {
-        sectionName: '',
-      });
+      updateSectionHandler({});
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
     });
 
-    describe('given sectionName is a populatedString', () => {
-      test('if payload update is undefined, returns given state', () => {
+    describe('given defined payload', () => {
+      test('if sectionName is missing from payload, returns given state object', () => {
         // Given
-        const existingState = {};
+        const state = {};
 
         // When
-        const updatedState = updateSectionHandler(existingState, {
-          sectionName: 'section',
-        });
+        const updatedState = updateSectionHandler(state, {});
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(updatedState).toBe(state);
       });
 
-      test('if payload update is null, returns given state', () => {
+      test('if sectionName is empty string in payload, returns given state object', () => {
         // Given
-        const existingState = {};
+        const state = {};
 
         // When
-        const updatedState = updateSectionHandler(existingState, {
-          sectionName: 'section',
-          update: null,
-        });
+        const updatedState = updateSectionHandler(state, { sectionName: '' });
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(updatedState).toBe(state);
       });
 
-      test('if payload update is empty object, returns given state', () => {
-        // Given
-        const existingState = {};
-
+      test('if sectionName is invalid, publishes warning', () => {
         // When
-        const updatedState = updateSectionHandler(existingState, {
-          sectionName: 'section',
-          update: {},
-        });
+        updateSectionHandler({}, {});
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+      });
+
+      describe('given defined sectionName', () => {
+        test('if payload update is missing, returns given state', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          const updatedState = updateSectionHandler(existingState, {
+            sectionName: 'SomeSectionName',
+          });
+
+          // Then
+          expect(updatedState).toBe(existingState);
+        });
+
+        test('if payload update is empty object, returns given state', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          const updatedState = updateSectionHandler(existingState, {
+            sectionName: 'SomeSectionName',
+            update: {},
+          });
+
+          // Then
+          expect(updatedState).toBe(existingState);
+        });
+
+        test('if payload update is invalid, publishes warning', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          updateSectionHandler(existingState, {
+            sectionName: 'SomeSectionName',
+          });
+
+          // Then
+          expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+        });
       });
     });
   });

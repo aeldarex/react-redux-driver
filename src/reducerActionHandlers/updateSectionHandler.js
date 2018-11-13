@@ -3,25 +3,19 @@ import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import isPopulatedString from '../utils/isPopulatedString';
 import { updateOne } from '../sliceInteraction';
 
-function updateSectionHandler(state, { sectionName, update } = {}) {
+const invalidInputsWarning = `A DRIVER_UPDATE_SECTION action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an update object property with at least one child property.`;
+
+function updateSectionHandler(state, payload) {
+  const { sectionName, update } = payload || {};
   if (
     !state
     || !isPopulatedString(sectionName)
     || !isObjectWithOwnProps(update)
   ) {
-    warning(
-      state,
-      'A DRIVER_UPDATE_SECTION action was ignored because the given state was null or undefined.',
-    );
-    warning(
-      isPopulatedString(sectionName),
-      "A DRIVER_UPDATE_SECTION action was ignored because the payload's sectionName was not a string with length > 0.",
-    );
-    warning(
-      isObjectWithOwnProps(update),
-      "A DRIVER_UPDATE_SECTION action was ignored because the payload's update was empty or missing.",
-    );
-
+    warning(false, invalidInputsWarning);
     return state || {};
   }
 

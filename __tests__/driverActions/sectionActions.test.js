@@ -1,3 +1,4 @@
+import ReduxSection from '../../src/ReduxSection';
 import { updateSection } from '../../src/driverActions/sectionActions';
 import { DRIVER_UPDATE_SECTION } from '../../src/actionTypes';
 
@@ -10,7 +11,7 @@ describe('updateSection', () => {
     expect(result.type).toBe(DRIVER_UPDATE_SECTION);
   });
 
-  test('returns action with payload containing given sectionName', () => {
+  test('if given sectionType does not extend ReduxSection, returns action with empty payload', () => {
     // Given
     const sectionName = 'someSection';
 
@@ -18,17 +19,22 @@ describe('updateSection', () => {
     const result = updateSection(sectionName);
 
     // Then
-    expect(result.payload.sectionName).toBe(sectionName);
+    expect(result.payload).toEqual({});
   });
 
-  test('returns action with payload containing given update', () => {
+  test('if given sectionType does extend ReduxSection, returns action with sectionName from ReduxSection.stateSlice and update', () => {
     // Given
-    const update = {};
+    class Auth extends ReduxSection {}
+
+    const update = { propA: 5 };
 
     // When
-    const result = updateSection('someSection', update);
+    const result = updateSection(Auth, update);
 
     // Then
-    expect(result.payload.update).toBe(update);
+    expect(result.payload).toEqual({
+      sectionName: 'Auth',
+      update,
+    });
   });
 });
