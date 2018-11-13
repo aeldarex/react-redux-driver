@@ -36,11 +36,27 @@ The main takeaway is that it's important for the driverReducer to operate at the
 
 ## Manipulating The State
 
-Once the reducer is in place we're ready to start using the driver's dispatch functions to manipulate the state. But before we can start injecting our actions we need to discuss the concepts of _ReduxObject_, _filter_, and _update_ objects.
+Once the reducer is in place we're ready to start using the driver's dispatch functions to manipulate the state. But before we can start injecting our actions we need to discuss the concepts of _ReduxSection_, _ReduxObject_, _filter_, and _update_ objects.
+
+## What is a ReduxSection
+
+A ReduxSection is an object model for data you want to store in a top-level section of the state. You will usually want ReduxSection models for items like user specific configuration or a user's authentication data.
+
+```javascript
+import { ReduxSection } from 'react-redux-driver';
+
+class Auth extends ReduxSection {
+  constructor(userId, accessToken) {
+    super();
+    this.userId = userId;
+    this.accessToken = accessToken;
+  }
+}
+```
 
 ## What is a ReduxObject?
 
-A ReduxObject is essentially an object model for the data you want to store. All CRUD operations operate on the assumption that the objects being persisted/read extend the ReduxObject class included in the package.
+A ReduxObject is an object model for data which you want to store in multiple instances. You will usually want ReduxObject models for items like friends of a user, or a user's posts on a message board.
 
 ```javascript
 import { ReduxObject } from 'react-redux-driver';
@@ -54,8 +70,6 @@ class Friend extends ReduxObject {
   }
 }
 ```
-
-The only requirement from the above code is that the class extends ReduxObject, how you instantiate or otherwise manipulate the objects is up to you. The driver will **ALWAYS** preserve the prototype when handling ReduxObject implementations, so feel free to add non-primitive items to the class definitions.
 
 ### What is a filter object?
 
@@ -108,7 +122,7 @@ As javascript is not a typed language, there is no guarantee that all of our obj
 
 ## Dispatch Actions
 
-Equipped with the knowledge of how to create ReduxObject, filter, and update objects, let's look at the dispatchable actions available to us as part of the driver.
+Equipped with the knowledge of how to create ReduxSection, ReduxObject, filter, and update objects, let's look at the dispatchable actions available to us as part of the driver.
 
 ### Create Actions
 
@@ -124,12 +138,12 @@ The insert actions will insert one or more items into the state. If you attempt 
 ```typescript
 updateOne(objectType: typeof ReduxObject, filter: any, update: any);
 updateMany(objectType: typeof ReduxObject, filter: any, update: any);
-updateSection(sectionName: string, update: any);
+updateSection(sectionName: ReduxSection, update: any);
 ```
 
 The updateOne and updateMany actions will update one or more items currently existing in the state. The objectType describes the type of object to be updated, the filter outlines which objects of that type should be considered, and the update itself defines the changes which should be made to the items matching the filter. If updateOne is given a filter which matches more than one object then only the first object found will be updated (note that in terms of ordering the objects are tracked by id).
 
-The updateSection action differs in that it's focused on updating a specific section of the state rather than doing a CRUD operation on given object(s). This is most useful when wanting to manage a state object where you will only ever want a single object. A good example of this would be storing a string token in an 'auth' section of the state. You'll never want multiple auth objects, so instead of creating a ReduxObject with the token and using insertOne, you would use updateSection and add the token to the 'auth' section of the state. This section could then be referenced with simply a 'state.auth' in your mapStateToProps.
+The updateSection action differs in that it's focused on updating a specific section of the state rather than doing a CRUD operation on given object(s). This is most useful when wanting to manage a state object where you will only ever want a single object. A good example of this would be storing a string token in an 'Auth' section of the state. You'll never want multiple auth objects, so instead of creating a ReduxObject with the token and using insertOne, you would create a ReduxSection with the token and use updateSection. This section could then be referenced with simply a 'state.Auth' in your mapStateToProps.
 
 ### Delete Actions
 
