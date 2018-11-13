@@ -1,6 +1,11 @@
 import sinon from 'sinon';
 import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
 
+const invalidPayloadWarning = `Warning: A DRIVER_INSERT_ONE action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an object property with an id.`;
+
 describe('invalid parameter cases', () => {
   let errorStub;
 
@@ -32,6 +37,14 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
+  test('if state is invalid, publishes warning', () => {
+    // When
+    insertOneHandler();
+
+    // Then
+    expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+  });
+
   describe('given defined state', () => {
     test('if payload is missing, returns given state object', () => {
       // Given
@@ -55,6 +68,14 @@ describe('invalid parameter cases', () => {
       expect(updatedState).toBe(state);
     });
 
+    test('if payload is invalid, publishes warning', () => {
+      // When
+      insertOneHandler({});
+
+      // Then
+      expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+    });
+
     describe('given defined payload', () => {
       test('if sectionName is missing from payload, returns given state object', () => {
         // Given
@@ -62,17 +83,6 @@ describe('invalid parameter cases', () => {
 
         // When
         const updatedState = insertOneHandler(state, {});
-
-        // Then
-        expect(updatedState).toBe(state);
-      });
-
-      test('if sectionName is not a string in payload, returns given state object', () => {
-        // Given
-        const state = {};
-
-        // When
-        const updatedState = insertOneHandler(state, { sectionName: {} });
 
         // Then
         expect(updatedState).toBe(state);
@@ -89,6 +99,14 @@ describe('invalid parameter cases', () => {
         expect(updatedState).toBe(state);
       });
 
+      test('if sectionName is invalid, publishes warning', () => {
+        // When
+        insertOneHandler({}, {});
+
+        // Then
+        expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+      });
+
       describe('given populated sectionName', () => {
         test('if object is missing from payload, returns given state object', () => {
           // Given
@@ -97,20 +115,6 @@ describe('invalid parameter cases', () => {
           // When
           const updatedState = insertOneHandler(state, {
             sectionName: 'SomeSection',
-          });
-
-          // Then
-          expect(updatedState).toBe(state);
-        });
-
-        test('if object is not of type object, returns given state object', () => {
-          // Given
-          const state = {};
-
-          // When
-          const updatedState = insertOneHandler(state, {
-            sectionName: 'SomeSection',
-            object: () => {},
           });
 
           // Then
@@ -129,6 +133,14 @@ describe('invalid parameter cases', () => {
 
           // Then
           expect(updatedState).toBe(state);
+        });
+
+        test('if object is invalid, publishes warning', () => {
+          // When
+          insertOneHandler({}, { sectionName: 'SomeSection' });
+
+          // Then
+          expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
         });
       });
     });

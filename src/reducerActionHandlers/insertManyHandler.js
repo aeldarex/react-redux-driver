@@ -1,40 +1,37 @@
 import warning from 'warning';
-import ReduxObject from '../ReduxObject';
+import isPopulatedString from '../utils/isPopulatedString';
+import isObjectWithId from '../utils/isObjectWithId';
 
-function insertManyHandler(state, reduxObjects) {
-  if (!state || !Array.isArray(reduxObjects)) {
-    warning(
-      state,
-      'A DRIVER_INSERT_MANY action was ignored because the given state was null or undefined.',
-    );
-    warning(
-      Array.isArray(reduxObjects),
-      'A DRIVER_INSERT_MANY action was ignored because the payload was not an array.',
-    );
+const invalidPayloadWarning = `A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must be an array.`;
+const invalidInsertPayloadWarning = `An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an object property with an id.`;
+
+function insertManyHandler(state, insertPayloads) {
+  if (!state || !Array.isArray(insertPayloads)) {
+    warning(false, invalidPayloadWarning);
     return state || {};
   }
 
   const freshSlices = {};
 
-  reduxObjects.forEach((x) => {
-    if (!(x instanceof ReduxObject)) {
-      warning(
-        false,
-        'An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
-      );
+  insertPayloads.forEach((x) => {
+    const { sectionName, object } = x || {};
+    if (!isPopulatedString(sectionName) || !isObjectWithId(object)) {
+      warning(false, invalidInsertPayloadWarning);
       return;
     }
 
-    const { stateSlice } = x.constructor;
-
-    let sliceToUpdate = freshSlices[stateSlice];
+    let sliceToUpdate = freshSlices[sectionName];
     if (!sliceToUpdate) {
-      sliceToUpdate = state[stateSlice] ? { ...state[stateSlice] } : {};
-      freshSlices[stateSlice] = sliceToUpdate;
+      sliceToUpdate = state[sectionName] ? { ...state[sectionName] } : {};
+      freshSlices[sectionName] = sliceToUpdate;
     }
 
-    if (!sliceToUpdate[x.id]) {
-      sliceToUpdate[x.id] = x;
+    if (!sliceToUpdate[object.id]) {
+      sliceToUpdate[object.id] = object;
     }
   });
 

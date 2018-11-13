@@ -1,6 +1,12 @@
 import sinon from 'sinon';
 import insertManyHandler from '../../src/reducerActionHandlers/insertManyHandler';
-import ReduxObject from '../../src/ReduxObject';
+
+const invalidPayloadWarning = `Warning: A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must be an array.`;
+const invalidInsertPayloadWarning = `Warning: An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an object property with an id.`;
 
 describe('invalid parameter cases', () => {
   let errorStub;
@@ -17,36 +23,12 @@ describe('invalid parameter cases', () => {
     errorStub.restore();
   });
 
-  test('if state is undefined, produces warning', () => {
-    // When
-    insertManyHandler();
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_MANY action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
-  });
-
   test('if state is undefined, returns empty object', () => {
     // When
     const updatedState = insertManyHandler();
 
     // Then
     expect(updatedState).toEqual({});
-  });
-
-  test('if state is null, produces warning', () => {
-    // When
-    insertManyHandler(null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_MANY action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
   });
 
   test('if state is null, returns empty object', () => {
@@ -57,18 +39,26 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if given payload is not an array, produces warning', () => {
+  test('if state is invalid, publishes warning', () => {
     // When
-    insertManyHandler({}, {});
+    insertManyHandler();
 
     // Then
-    expect(errorStub.calledOnce).toBe(true);
-    expect(errorStub.getCall(0).args[0]).toBe(
-      'Warning: A DRIVER_INSERT_MANY action was ignored because the payload was not an array.',
-    );
+    expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
+    test('if payload is missing, returns given state object', () => {
+      // Given
+      const existingState = {};
+
+      // When
+      const updatedState = insertManyHandler(existingState);
+
+      // Then
+      expect(updatedState).toBe(existingState);
+    });
+
     test('if given payload is not an array, returns given state object', () => {
       // Given
       const existingState = {};
@@ -79,10 +69,18 @@ describe('invalid parameter cases', () => {
       // Then
       expect(updatedState).toBe(existingState);
     });
+
+    test('if payload is invalid, publishes warning', () => {
+      // When
+      insertManyHandler({});
+
+      // Then
+      expect(errorStub.calledWith(invalidPayloadWarning)).toBe(true);
+    });
   });
 });
 
-describe('mixed object type arrays', () => {
+describe('invalid insert payloads', () => {
   let errorStub;
 
   beforeAll(() => {
@@ -97,168 +95,182 @@ describe('mixed object type arrays', () => {
     errorStub.restore();
   });
 
-  test('given array does not contain any ReduxObject objects, produces warnings for each', () => {
-    // When
-    insertManyHandler({}, [{}, {}]);
-
-    // Then
-    expect(errorStub.callCount).toBe(2);
-    expect(
-      errorStub.alwaysCalledWithExactly(
-        'Warning: An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
-      ),
-    ).toBe(true);
-  });
-
-  test('given array does not contain any ReduxObject objects, returns given state object', () => {
+  test('given array contains invalid insert payloads, returns given state', () => {
     // Given
-    const existingState = {};
-
-    // When
-    const updatedState = insertManyHandler(existingState, [{}, {}]);
-
-    // Then
-    expect(updatedState).toBe(existingState);
-  });
-
-  test('given array of mixed objects, produces warnings for objects which are not instances of ReduxObject', () => {
-    // Given
-    class TestObject extends ReduxObject {}
-
-    const testObject1 = new TestObject();
-    const testObject2 = new TestObject();
-
-    // When
-    insertManyHandler({}, [{}, testObject1, {}, testObject2, {}]);
-
-    // Then
-    expect(errorStub.callCount).toBe(3);
-    expect(
-      errorStub.alwaysCalledWithExactly(
-        'Warning: An item in a DRIVER_INSERT_MANY action was ignored because it was not an instance of a ReduxObject.',
-      ),
-    ).toBe(true);
-  });
-
-  test('given array of mixed objects, inserts objects which are instances of ReduxObject', () => {
-    // Given
-    class TestObject extends ReduxObject {}
-
-    const testObject1 = new TestObject();
-    const testObject2 = new TestObject();
-
     const existingState = {};
 
     // When
     const updatedState = insertManyHandler(existingState, [
       {},
-      testObject1,
-      {},
-      testObject2,
-      {},
+      { sectionName: 'SomeSection' },
+      null,
+      { object: {} },
+      { object: { id: '1a' } },
     ]);
 
     // Then
-    expect(updatedState).not.toBe(existingState);
+    expect(updatedState).toBe(existingState);
+  });
+
+  test('given array contains invalid insert payloads, publishes warnings', () => {
+    // Given
+    const existingState = {};
+
+    // When
+    insertManyHandler(existingState, [
+      {},
+      { sectionName: 'SomeSection' },
+      null,
+      { object: {} },
+      { object: { id: '1a' } },
+    ]);
+
+    // Then
+    expect(errorStub.callCount).toBe(5);
+    expect(errorStub.alwaysCalledWith(invalidInsertPayloadWarning)).toBe(true);
+  });
+
+  test('given array contains mixture of valid and invalid payloads, inserts objects from valid payloads', () => {
+    // Given
+    const existingState = {};
+    const sectionName = 'ValidSection';
+    const object1 = { id: '1b' };
+    const object2 = { id: '1c' };
+
+    const validPayload1 = { sectionName, object: object1 };
+    const validPayload2 = { sectionName, object: object2 };
+
+    // When
+    const updatedState = insertManyHandler(existingState, [
+      {},
+      { sectionName: 'SomeSection' },
+      validPayload1,
+      { object: {} },
+      { object: { id: '1a' } },
+      validPayload2,
+    ]);
+
+    // Then
     expect(updatedState).toEqual({
-      [TestObject.stateSlice]: {
-        [testObject1.id]: testObject1,
-        [testObject2.id]: testObject2,
+      [sectionName]: {
+        [object1.id]: object1,
+        [object2.id]: object2,
       },
     });
   });
 });
 
-test('given array of ReduxObject objects and state slice undefined, creates state slice and inserts ReduxObject objects', () => {
+test('given array of insert payloads and state slice undefined, creates state slice and inserts objects', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
-
   const existingState = {};
+  const sectionName = 'ValidSection';
+  const object1 = { id: '1b' };
+  const object2 = { id: '1c' };
 
   // When
   const updatedState = insertManyHandler(existingState, [
-    testObject1,
-    testObject2,
+    { sectionName, object: object1 },
+    { sectionName, object: object2 },
   ]);
 
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
+    [sectionName]: {
+      [object1.id]: object1,
+      [object2.id]: object2,
     },
   });
 });
 
-test('objects in state slice have different ids than given ReduxObject objects, inserts objects', () => {
+test('objects in state slice have different ids than given objects, inserts objects', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'ValidSection';
 
-  const existingTestObject1 = new TestObject();
-  const existingTestObject2 = new TestObject();
+  const existingObject = { id: '1a' };
   const existingStateSlice = {
-    [existingTestObject1.id]: existingTestObject1,
-    [existingTestObject2.id]: existingTestObject2,
+    [existingObject.id]: existingObject,
   };
   const existingState = {
-    [TestObject.stateSlice]: existingStateSlice,
+    [sectionName]: existingStateSlice,
   };
 
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
+  const newObject1 = { id: '1b' };
+  const newObject2 = { id: '1c' };
 
   // When
   const updatedState = insertManyHandler(existingState, [
-    testObject1,
-    testObject2,
+    { sectionName, object: newObject1 },
+    { sectionName, object: newObject2 },
   ]);
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(existingStateSlice);
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
+    [sectionName]: {
       ...existingStateSlice,
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
+      [newObject1.id]: newObject1,
+      [newObject2.id]: newObject2,
     },
   });
 });
 
 test('some objects with ids already exist in state, only adds objects with new ids to state', () => {
   // Given
-  class TestObject extends ReduxObject {}
+  const sectionName = 'ValidSection';
 
-  const existingTestObject = new TestObject();
+  const existingObject = { id: '1a', otherField: 'hello' };
   const existingStateSlice = {
-    [existingTestObject.id]: existingTestObject,
+    [existingObject.id]: existingObject,
   };
   const existingState = {
-    [TestObject.stateSlice]: existingStateSlice,
+    [sectionName]: existingStateSlice,
   };
 
-  const newTestObjectWithSameId = new TestObject();
-  newTestObjectWithSameId.id = existingTestObject.id;
-  newTestObjectWithSameId.propA = 5;
-  const newTestObject = new TestObject();
+  const newObject1 = { id: '1b' };
+  const newObject2 = { id: '1a' };
 
   // When
   const updatedState = insertManyHandler(existingState, [
-    existingTestObject,
-    newTestObject,
+    { sectionName, object: newObject1 },
+    { sectionName, object: newObject2 },
   ]);
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(existingStateSlice);
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
+    [sectionName]: {
       ...existingStateSlice,
-      [newTestObject.id]: newTestObject,
+      [newObject1.id]: newObject1,
+    },
+  });
+});
+
+test('insert payload are for different sections, adds each object to the correct section', () => {
+  // Given
+  const sectionName1 = 'ValidSectionA';
+  const sectionName2 = 'ValidSectionB';
+
+  const existingState = {};
+
+  const newObject1 = { id: '1a' };
+  const newObject2 = { id: '1b' };
+
+  // When
+  const updatedState = insertManyHandler(existingState, [
+    { sectionName: sectionName1, object: newObject1 },
+    { sectionName: sectionName2, object: newObject2 },
+  ]);
+
+  // Then
+  expect(updatedState).toEqual({
+    [sectionName1]: {
+      [newObject1.id]: newObject1,
+    },
+    [sectionName2]: {
+      [newObject2.id]: newObject2,
     },
   });
 });
