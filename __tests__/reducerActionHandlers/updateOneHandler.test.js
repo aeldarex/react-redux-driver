@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 import updateOneHandler from '../../src/reducerActionHandlers/updateOneHandler';
-import ReduxObject from '../../src/ReduxObject';
 
 const invalidInputsWarning = `Warning: A DRIVER_UPDATE_ONE action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
