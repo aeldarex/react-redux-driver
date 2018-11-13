@@ -1,18 +1,20 @@
 import { createSelector } from 'reselect';
 import warning from 'warning';
-import isReduxObjectType from '../utils/isReduxObjectType';
 import { createFilterFunctionTree } from '../functionTreeCreation';
 import createSliceSelector from './createSliceSelector';
 import allValuesSelector from './basicSelectors/allValuesSelector';
 
-function createFindManySelector(objectType, filter) {
+function createFindManySelector(objectDefinition, filter) {
   warning(
-    isReduxObjectType(objectType),
-    'To create a working selector objectType must extend ReduxObject.',
+    objectDefinition && objectDefinition.stateSlice,
+    'To create a working selector objectDefinition must have a stateSlice property.',
   );
 
-  const sliceSelector = createSliceSelector(objectType.stateSlice);
-  let selector = createSelector(sliceSelector, allValuesSelector);
+  const sliceSelector = createSliceSelector(objectDefinition.stateSlice);
+  let selector = createSelector(
+    sliceSelector,
+    allValuesSelector,
+  );
 
   if (filter) {
     const functionTree = createFilterFunctionTree(filter);
@@ -24,7 +26,10 @@ function createFindManySelector(objectType, filter) {
         return false;
       }
     });
-    selector = createSelector(selector, filterSelector);
+    selector = createSelector(
+      selector,
+      filterSelector,
+    );
   }
 
   return selector;

@@ -81,7 +81,7 @@ test('if item throws error in filter function tree selector ignores item', () =>
   expect(result).toEqual([testObject1, testObject3]);
 });
 
-test('given objectType that is not a ReduxObject publishes warning', () => {
+test('given objectDefinition that does not have a stateSlice property publishes warning', () => {
   // Given
   const errorStub = sinon.stub(console, 'error');
 
@@ -91,7 +91,7 @@ test('given objectType that is not a ReduxObject publishes warning', () => {
   // Then
   expect(
     errorStub.calledWith(
-      'Warning: To create a working selector objectType must extend ReduxObject.',
+      'Warning: To create a working selector objectDefinition must have a stateSlice property.',
     ),
   ).toBe(true);
 

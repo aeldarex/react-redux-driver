@@ -1,19 +1,21 @@
 import { createSelector } from 'reselect';
 import warning from 'warning';
-import isReduxObjectType from '../utils/isReduxObjectType';
 import { createFilterFunctionTree } from '../functionTreeCreation';
 import createSliceSelector from './createSliceSelector';
 import allValuesSelector from './basicSelectors/allValuesSelector';
 import firstItemSelector from './basicSelectors/firstItemSelector';
 
-function createFindOneSelector(objectType, filter) {
+function createFindOneSelector(objectDefinition, filter) {
   warning(
-    isReduxObjectType(objectType),
-    'To create a working selector objectType must extend ReduxObject.',
+    objectDefinition && objectDefinition.stateSlice,
+    'To create a working selector objectDefinition must have a stateSlice property.',
   );
 
-  const sliceSelector = createSliceSelector(objectType.stateSlice);
-  let selector = createSelector(sliceSelector, allValuesSelector);
+  const sliceSelector = createSliceSelector(objectDefinition.stateSlice);
+  let selector = createSelector(
+    sliceSelector,
+    allValuesSelector,
+  );
 
   if (filter) {
     const functionTree = createFilterFunctionTree(filter);
@@ -25,9 +27,15 @@ function createFindOneSelector(objectType, filter) {
         return false;
       }
     });
-    selector = createSelector(selector, filterSelector);
+    selector = createSelector(
+      selector,
+      filterSelector,
+    );
   } else {
-    selector = createSelector(selector, firstItemSelector);
+    selector = createSelector(
+      selector,
+      firstItemSelector,
+    );
   }
 
   return selector;

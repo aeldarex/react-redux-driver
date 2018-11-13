@@ -25,44 +25,43 @@ describe('insertOne', () => {
     expect(result.type).toBe(DRIVER_INSERT_ONE);
   });
 
-  test('if given object is not an instance of ReduxObject, returns action with empty payload', () => {
+  test('if given objects constructor does not have a stateSlice string property, returns action with empty sectionName and copy of object', () => {
     // Given
-    const item = { propA: 5, propB: 'hello' };
+    const object = { propA: 5, propB: 'hello' };
 
     // When
-    const result = insertOne(item);
-
-    // Then
-    expect(result.payload).toEqual({});
-  });
-
-  test('if given object is an instance of ReduxObject, returns action with sectionName and plain copy of object', () => {
-    // Given
-    class TestObject extends ReduxObject {
-      constructor(propA, propB) {
-        super();
-        this.propA = propA;
-        this.propB = propB;
-      }
-    }
-
-    const item = new TestObject(5, { propC: 'hello' });
-
-    // When
-    const result = insertOne(item);
+    const result = insertOne(object);
 
     // Then
     expect(result.payload).toEqual({
-      sectionName: TestObject.stateSlice,
-      object: {
-        id: item.id,
-        propA: 5,
-        propB: {
-          propC: 'hello',
-        },
-      },
+      sectionName: '',
+      object,
     });
-    expect(result.payload.object).not.toBe(item);
+    expect(result.payload.object).not.toBe(object);
+  });
+
+  test('if given objects constructor does have a stateSlice string property, returns action with stateSlice as sectionName and copy of object', () => {
+    // Given
+    const stateSlice = 'SomeStateSlice';
+    class SomeClass {
+      static get stateSlice() {
+        return stateSlice;
+      }
+    }
+
+    const object = new SomeClass();
+    object.propA = 5;
+    object.propB = 'hello';
+
+    // When
+    const result = insertOne(object);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName: stateSlice,
+      object,
+    });
+    expect(result.payload.object).not.toBe(object);
   });
 });
 
@@ -83,54 +82,51 @@ describe('insertMany', () => {
     expect(result.payload).toEqual([]);
   });
 
-  test('if given input is an array of ReduxObjects, returns action with payload being an array of object copies and their section names', () => {
+  test('if given input is an array of objects, returns action with payload being an array of object copies and their section names', () => {
     // Given
-    class TestObjectA extends ReduxObject {
-      constructor(propA, propB) {
-        super();
-        this.propA = propA;
-        this.propB = propB;
+    class SomeClassA {
+      static get stateSlice() {
+        return 'SomeClassAObjects';
+      }
+    }
+    class SomeClassB {
+      static get stateSlice() {
+        return 'SomeClassBObjects';
       }
     }
 
-    class TestObjectB extends ReduxObject {
-      constructor(propC, propD) {
-        super();
-        this.propC = propC;
-        this.propD = propD;
-      }
-    }
-
-    const item1 = new TestObjectA(5, { propY: 'hello' });
-    const item2 = new TestObjectB('goodbye', { propZ: 25 });
+    const object1 = Object.assign(new SomeClassA(), {
+      propA: 5,
+      propB: 'hello',
+    });
+    const object2 = Object.assign(new SomeClassB(), {
+      propC: 'goodbye',
+      propD: 10,
+    });
+    const object3 = { propE: null, propF: [1, 2, 3] };
 
     // When
-    const result = insertMany([item1, item2]);
+    const result = insertMany([object1, object2, object3]);
 
     // Then
-    expect(result.payload.length).toBe(2);
+    expect(result.payload.length).toBe(3);
     expect(result.payload).toContainEqual({
-      sectionName: TestObjectA.stateSlice,
-      object: {
-        id: item1.id,
-        propA: 5,
-        propB: {
-          propY: 'hello',
-        },
-      },
+      sectionName: 'SomeClassAObjects',
+      object: object1,
     });
     expect(result.payload).toContainEqual({
-      sectionName: TestObjectB.stateSlice,
-      object: {
-        id: item2.id,
-        propC: 'goodbye',
-        propD: {
-          propZ: 25,
-        },
-      },
+      sectionName: 'SomeClassBObjects',
+      object: object2,
     });
-    expect(result.payload).not.toContain(item1);
-    expect(result.payload).not.toContain(item2);
+    expect(result.payload).toContainEqual({
+      sectionName: '',
+      object: object3,
+    });
+
+    const objectsInPayload = result.payload.map(i => i.object);
+    expect(objectsInPayload).not.toContain(object1);
+    expect(objectsInPayload).not.toContain(object2);
+    expect(objectsInPayload).not.toContain(object3);
   });
 });
 
@@ -143,26 +139,36 @@ describe('updateOne', () => {
     expect(result.type).toBe(DRIVER_UPDATE_ONE);
   });
 
-  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
-    // When
-    const result = updateOne({}, { propA: 5 }, { propA: 10 });
-
-    // THen
-    expect(result.payload).toEqual({});
-  });
-
-  test('returns action with payload containing given objectType stateSlice as sectionName, filter, and update objects', () => {
+  test('if given objectDefinition does not have a stateSlice string property, returns action with empty sectionName', () => {
     // Given
-    class TestObject extends ReduxObject {}
+    const filter = { propA: 5 };
+    const update = { propA: 10 };
 
     // When
-    const result = updateOne(TestObject, { propA: 5 }, { propB: 'abc' });
+    const result = updateOne({}, filter, update);
 
     // Then
     expect(result.payload).toEqual({
-      sectionName: TestObject.stateSlice,
-      filter: { propA: 5 },
-      update: { propB: 'abc' },
+      sectionName: '',
+      filter,
+      update,
+    });
+  });
+
+  test('if given objectDefinition does have a stateSlice string property, returns fully populated payload', () => {
+    // Given
+    const sectionName = 'SomeSectionName';
+    const filter = { propA: 5 };
+    const update = { propA: 'abc' };
+
+    // When
+    const result = updateOne({ stateSlice: sectionName }, filter, update);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName,
+      filter,
+      update,
     });
   });
 });
@@ -176,26 +182,36 @@ describe('updateMany', () => {
     expect(result.type).toBe(DRIVER_UPDATE_MANY);
   });
 
-  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
-    // When
-    const result = updateMany({}, { propA: 5 }, { propA: 10 });
-
-    // THen
-    expect(result.payload).toEqual({});
-  });
-
-  test('returns action with payload containing given objectType stateSlice as sectionName, filter, and update objects', () => {
+  test('if given objectDefinition does not have a stateSlice string property, returns action with empty sectionName', () => {
     // Given
-    class TestObject extends ReduxObject {}
+    const filter = { propA: 5 };
+    const update = { propA: 10 };
 
     // When
-    const result = updateMany(TestObject, { propA: 5 }, { propB: 'abc' });
+    const result = updateMany({}, filter, update);
 
     // Then
     expect(result.payload).toEqual({
-      sectionName: TestObject.stateSlice,
-      filter: { propA: 5 },
-      update: { propB: 'abc' },
+      sectionName: '',
+      filter,
+      update,
+    });
+  });
+
+  test('if given objectDefinition does have a stateSlice string property, returns fully populated payload', () => {
+    // Given
+    const sectionName = 'SomeSectionName';
+    const filter = { propA: 5 };
+    const update = { propA: 'abc' };
+
+    // When
+    const result = updateMany({ stateSlice: sectionName }, filter, update);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName,
+      filter,
+      update,
     });
   });
 });
@@ -209,25 +225,32 @@ describe('deleteOne', () => {
     expect(result.type).toBe(DRIVER_DELETE_ONE);
   });
 
-  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
-    // When
-    const result = deleteOne({}, { propA: 5 });
-
-    // THen
-    expect(result.payload).toEqual({});
-  });
-
-  test('returns action with payload containing given objectType stateSlice as sectionName and the filter object', () => {
+  test('if given objectDefinition does not have a stateSlice string property, returns action with empty sectionName', () => {
     // Given
-    class TestObject extends ReduxObject {}
+    const filter = { propA: 5 };
 
     // When
-    const result = deleteOne(TestObject, { propA: 5 });
+    const result = deleteOne({}, filter);
 
     // Then
     expect(result.payload).toEqual({
-      sectionName: TestObject.stateSlice,
-      filter: { propA: 5 },
+      sectionName: '',
+      filter,
+    });
+  });
+
+  test('if given objectDefinition does have a stateSlice string property, returns fully populated payload', () => {
+    // Given
+    const sectionName = 'SomeSectionName';
+    const filter = { propA: 5 };
+
+    // When
+    const result = deleteOne({ stateSlice: sectionName }, filter);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName,
+      filter,
     });
   });
 });
@@ -241,25 +264,32 @@ describe('deleteMany', () => {
     expect(result.type).toBe(DRIVER_DELETE_MANY);
   });
 
-  test('if given objectType does not extend ReduxObject, returns action with payload of empty object', () => {
-    // When
-    const result = deleteMany({}, { propA: 5 });
-
-    // THen
-    expect(result.payload).toEqual({});
-  });
-
-  test('returns action with payload containing given objectType stateSlice as sectionName and the filter object', () => {
+  test('if given objectDefinition does not have a stateSlice string property, returns action with empty sectionName', () => {
     // Given
-    class TestObject extends ReduxObject {}
+    const filter = { propA: 5 };
 
     // When
-    const result = deleteMany(TestObject, { propA: 5 });
+    const result = deleteMany({}, filter);
 
     // Then
     expect(result.payload).toEqual({
-      sectionName: TestObject.stateSlice,
-      filter: { propA: 5 },
+      sectionName: '',
+      filter,
+    });
+  });
+
+  test('if given objectDefinition does have a stateSlice string property, returns fully populated payload', () => {
+    // Given
+    const sectionName = 'SomeSectionName';
+    const filter = { propA: 5 };
+
+    // When
+    const result = deleteMany({ stateSlice: sectionName }, filter);
+
+    // Then
+    expect(result.payload).toEqual({
+      sectionName,
+      filter,
     });
   });
 });

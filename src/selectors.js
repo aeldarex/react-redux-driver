@@ -3,12 +3,12 @@ import {
   createFindOneSelector,
 } from './selectorCreation';
 
-function findOne(objectType, filter) {
-  return createFindOneSelector(objectType, filter);
+function findOne(objectDefinition, filter) {
+  return createFindOneSelector(objectDefinition, filter);
 }
 
-function findMany(objectType, filter) {
-  return createFindManySelector(objectType, filter);
+function findMany(objectDefinition, filter) {
+  return createFindManySelector(objectDefinition, filter);
 }
 
 export { findOne, findMany };

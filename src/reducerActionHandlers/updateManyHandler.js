@@ -1,5 +1,4 @@
 import warning from 'warning';
-import isReduxObjectType from '../utils/isReduxObjectType';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import { filterMany, updateMany } from '../sliceInteraction';
 import isPopulatedString from '../utils/isPopulatedString';

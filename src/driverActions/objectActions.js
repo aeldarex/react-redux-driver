@@ -6,32 +6,29 @@ import {
   DRIVER_DELETE_ONE,
   DRIVER_DELETE_MANY,
 } from '../actionTypes';
-import ReduxObject from '../ReduxObject';
-import isReduxObjectType from '../utils/isReduxObjectType';
 
-function createInsertPayload(reduxObject) {
-  if (!(reduxObject instanceof ReduxObject)) {
-    return {};
+function createInsertPayload(object) {
+  if (!object) {
+    return { sectionName: '' };
   }
 
-  const sectionName = reduxObject.constructor.stateSlice;
-  const object = JSON.parse(JSON.stringify(reduxObject));
+  const { stateSlice } = object.constructor || {};
+  const sectionName = stateSlice || '';
 
-  return { sectionName, object };
+  const objectCopy = JSON.parse(JSON.stringify(object));
+
+  return { sectionName, object: objectCopy };
 }
 
-function createFilterBasedPayload(objectType, filter, update) {
-  if (!isReduxObjectType(objectType)) {
-    return {};
-  }
-
-  const sectionName = objectType.stateSlice;
+function createFilterBasedPayload(objectDefinition, filter, update) {
+  const { stateSlice } = objectDefinition || {};
+  const sectionName = stateSlice || '';
 
   return { sectionName, filter, update };
 }
 
-function insertOne(reduxObject) {
-  const payload = createInsertPayload(reduxObject);
+function insertOne(object) {
+  const payload = createInsertPayload(object);
 
   return {
     type: DRIVER_INSERT_ONE,
@@ -39,9 +36,9 @@ function insertOne(reduxObject) {
   };
 }
 
-function insertMany(reduxObjects) {
-  const payload = Array.isArray(reduxObjects)
-    ? reduxObjects.map(createInsertPayload)
+function insertMany(objects) {
+  const payload = Array.isArray(objects)
+    ? objects.map(createInsertPayload)
     : [];
 
   return {
@@ -50,8 +47,8 @@ function insertMany(reduxObjects) {
   };
 }
 
-function updateOne(objectType, filter, update) {
-  const payload = createFilterBasedPayload(objectType, filter, update);
+function updateOne(objectDefinition, filter, update) {
+  const payload = createFilterBasedPayload(objectDefinition, filter, update);
 
   return {
     type: DRIVER_UPDATE_ONE,
@@ -59,8 +56,8 @@ function updateOne(objectType, filter, update) {
   };
 }
 
-function updateMany(objectType, filter, update) {
-  const payload = createFilterBasedPayload(objectType, filter, update);
+function updateMany(objectDefinition, filter, update) {
+  const payload = createFilterBasedPayload(objectDefinition, filter, update);
 
   return {
     type: DRIVER_UPDATE_MANY,
@@ -68,8 +65,8 @@ function updateMany(objectType, filter, update) {
   };
 }
 
-function deleteOne(objectType, filter) {
-  const payload = createFilterBasedPayload(objectType, filter);
+function deleteOne(objectDefinition, filter) {
+  const payload = createFilterBasedPayload(objectDefinition, filter);
 
   return {
     type: DRIVER_DELETE_ONE,
@@ -77,8 +74,8 @@ function deleteOne(objectType, filter) {
   };
 }
 
-function deleteMany(objectType, filter) {
-  const payload = createFilterBasedPayload(objectType, filter);
+function deleteMany(objectDefinition, filter) {
+  const payload = createFilterBasedPayload(objectDefinition, filter);
 
   return {
     type: DRIVER_DELETE_MANY,
