@@ -1,24 +1,9 @@
-import {
-  validateState,
-  validateSectionName,
-  validateObject,
-} from './validators';
-import { DRIVER_INSERT_ONE } from '../actionTypes';
-
-function allValid(state, sectionName, object) {
-  const isStateValid = validateState(state, DRIVER_INSERT_ONE);
-  const isSectionNameValid = validateSectionName(
-    sectionName,
-    DRIVER_INSERT_ONE,
-  );
-  const isObjectValid = validateObject(object, DRIVER_INSERT_ONE);
-
-  return isStateValid && isSectionNameValid && isObjectValid;
-}
+import isPopulatedString from '../utils/isPopulatedString';
+import isObjectWithId from '../utils/isObjectWithId';
 
 function insertOneHandler(state, payload) {
   const { sectionName, object } = payload || {};
-  if (!allValid(state, sectionName, object)) {
+  if (!state || !isPopulatedString(sectionName) || !isObjectWithId(object)) {
     return state || {};
   }
 

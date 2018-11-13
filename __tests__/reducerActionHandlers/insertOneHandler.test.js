@@ -1,7 +1,4 @@
 import sinon from 'sinon';
-import * as ValidateStateModule from '../../src/reducerActionHandlers/validators/validateState';
-import * as ValidateSectionNameModule from '../../src/reducerActionHandlers/validators/validateSectionName';
-import * as ValidateObjectModule from '../../src/reducerActionHandlers/validators/validateObject';
 import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
 
 describe('invalid parameter cases', () => {
@@ -17,21 +14,6 @@ describe('invalid parameter cases', () => {
 
   afterAll(() => {
     errorStub.restore();
-  });
-
-  test('all validators called', () => {
-    // Given
-    const spies = [
-      sinon.spy(ValidateStateModule, 'default'),
-      sinon.spy(ValidateSectionNameModule, 'default'),
-      sinon.spy(ValidateObjectModule, 'default'),
-    ];
-
-    // When
-    insertOneHandler();
-
-    // Then
-    expect(spies.every(s => s.calledOnce)).toBe(true);
   });
 
   test('if state is undefined, returns empty object', () => {
@@ -115,6 +97,20 @@ describe('invalid parameter cases', () => {
           // When
           const updatedState = insertOneHandler(state, {
             sectionName: 'SomeSection',
+          });
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+
+        test('if object is not of type object, returns given state object', () => {
+          // Given
+          const state = {};
+
+          // When
+          const updatedState = insertOneHandler(state, {
+            sectionName: 'SomeSection',
+            object: () => {},
           });
 
           // Then
