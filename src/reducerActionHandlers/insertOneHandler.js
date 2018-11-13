@@ -1,24 +1,24 @@
-import warning from 'warning';
-import isPopulatedString from '../utils/isPopulatedString';
+import {
+  validateState,
+  validateSectionName,
+  validateObject,
+} from './validators';
+import { DRIVER_INSERT_ONE } from '../actionTypes';
+
+function allValid(state, sectionName, object) {
+  const isStateValid = validateState(state, DRIVER_INSERT_ONE);
+  const isSectionNameValid = validateSectionName(
+    sectionName,
+    DRIVER_INSERT_ONE,
+  );
+  const isObjectValid = validateObject(object, DRIVER_INSERT_ONE);
+
+  return isStateValid && isSectionNameValid && isObjectValid;
+}
 
 function insertOneHandler(state, payload) {
   const { sectionName, object } = payload || {};
-  if (!state || !isPopulatedString(sectionName) || !object || !object.id) {
-    warning(
-      state,
-      'A DRIVER_INSERT_ONE action was ignored because the given state was null or undefined.',
-    );
-    warning(
-      isPopulatedString(sectionName),
-      'A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-        + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-    );
-    warning(
-      object && object.id,
-      'A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
-        + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-    );
-
+  if (!allValid(state, sectionName, object)) {
     return state || {};
   }
 

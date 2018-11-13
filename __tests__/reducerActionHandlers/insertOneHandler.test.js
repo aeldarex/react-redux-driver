@@ -1,4 +1,7 @@
 import sinon from 'sinon';
+import * as ValidateStateModule from '../../src/reducerActionHandlers/validators/validateState';
+import * as ValidateSectionNameModule from '../../src/reducerActionHandlers/validators/validateSectionName';
+import * as ValidateObjectModule from '../../src/reducerActionHandlers/validators/validateObject';
 import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
 
 describe('invalid parameter cases', () => {
@@ -16,16 +19,19 @@ describe('invalid parameter cases', () => {
     errorStub.restore();
   });
 
-  test('if state is undefined, produces warning', () => {
+  test('all validators called', () => {
+    // Given
+    const spies = [
+      sinon.spy(ValidateStateModule, 'default'),
+      sinon.spy(ValidateSectionNameModule, 'default'),
+      sinon.spy(ValidateObjectModule, 'default'),
+    ];
+
     // When
     insertOneHandler();
 
     // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
+    expect(spies.every(s => s.calledOnce)).toBe(true);
   });
 
   test('if state is undefined, returns empty object', () => {
@@ -36,141 +42,12 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if state is null, produces warning', () => {
-    // When
-    insertOneHandler(null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
-  });
-
   test('if state is null, returns empty object', () => {
     // When
     const updatedState = insertOneHandler(null);
 
     // Then
     expect(updatedState).toEqual({});
-  });
-
-  test('if payload is missing, produces sectionName warning', () => {
-    // When
-    insertOneHandler({});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload is missing, produces object warning', () => {
-    // When
-    insertOneHandler({});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload is null, produces sectionName warning', () => {
-    // When
-    insertOneHandler({}, null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload is null, produces object warning', () => {
-    // When
-    insertOneHandler({}, null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if sectionName is missing from payload, produces sectionName warning', () => {
-    // When
-    insertOneHandler({}, {});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if sectionName is not a string in payload, produces sectionName warning', () => {
-    // When
-    insertOneHandler({}, { sectionName: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if sectionName is empty string in payload, produces sectionName warning', () => {
-    // When
-    insertOneHandler({}, { sectionName: '' });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include a sectionName. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if object is missing from payload, produces warning', () => {
-    // When
-    insertOneHandler({}, {});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
-  });
-
-  test('if object in payload does not have an id, produces warning', () => {
-    // When
-    insertOneHandler({}, { object: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_INSERT_ONE action was ignored because the payload did not include an object with an id. '
-          + 'Did you try do an insert with something that was not an instance of ReduxObject?',
-      ),
-    ).toBe(true);
   });
 
   describe('given defined state', () => {
