@@ -2,6 +2,11 @@ import sinon from 'sinon';
 import updateOneHandler from '../../src/reducerActionHandlers/updateOneHandler';
 import ReduxObject from '../../src/ReduxObject';
 
+const invalidInputsWarning = `Warning: A DRIVER_UPDATE_ONE action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an update object property with at least one child property.`;
+
 describe('invalid parameter cases', () => {
   let errorStub;
 
@@ -17,36 +22,12 @@ describe('invalid parameter cases', () => {
     errorStub.restore();
   });
 
-  test('if state is undefined, produces warning', () => {
-    // When
-    updateOneHandler();
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_UPDATE_ONE action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
-  });
-
   test('if state is undefined, returns empty object', () => {
     // When
     const updatedState = updateOneHandler();
 
     // Then
     expect(updatedState).toEqual({});
-  });
-
-  test('if state is null, produces warning', () => {
-    // When
-    updateOneHandler(null);
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        'Warning: A DRIVER_UPDATE_ONE action was ignored because the given state was null or undefined.',
-      ),
-    ).toBe(true);
   });
 
   test('if state is null, returns empty object', () => {
@@ -57,149 +38,128 @@ describe('invalid parameter cases', () => {
     expect(updatedState).toEqual({});
   });
 
-  test('if payload objectType is undefined, produces warning', () => {
+  test('if state is invalid, publishes warning', () => {
     // When
-    updateOneHandler({}, {});
+    updateOneHandler();
 
     // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload objectType is object which does not extend ReduxObject, produces warning', () => {
-    // When
-    updateOneHandler({}, { objectType: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is undefined, produces warning', () => {
-    // When
-    updateOneHandler({}, {});
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is null, produces warning', () => {
-    // When
-    updateOneHandler({}, { update: null });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
-  });
-
-  test('if payload update is empty, produces warning', () => {
-    // When
-    updateOneHandler({}, { update: {} });
-
-    // Then
-    expect(
-      errorStub.calledWith(
-        "Warning: A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
-      ),
-    ).toBe(true);
+    expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
   });
 
   describe('given defined state', () => {
-    test('if payload objectType is undefined, returns given state', () => {
+    test('if payload is missing, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = updateOneHandler(existingState, {});
+      const updatedState = updateOneHandler(state);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
-    test('if payload objectType does not extend ReduxObject, returns given state', () => {
+    test('if payload is null, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = updateOneHandler(existingState, { objectType: {} });
+      const updatedState = updateOneHandler(state, null);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
-    describe('given objectType which does extend ReduxObject', () => {
-      test('if payload update is undefined, returns given state', () => {
-        // Given
-        class TestObject extends ReduxObject {}
+    test('if payload is invalid, publishes warning', () => {
+      // When
+      updateOneHandler({});
 
-        const existingState = {};
+      // Then
+      expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+    });
+
+    describe('given defined payload', () => {
+      test('if sectionName is missing from payload, returns given state object', () => {
+        // Given
+        const state = {};
 
         // When
-        const updatedState = updateOneHandler(existingState, {
-          objectType: TestObject,
-        });
+        const updatedState = updateOneHandler(state, {});
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(updatedState).toBe(state);
       });
 
-      test('if payload update is null, returns given state', () => {
+      test('if sectionName is empty string in payload, returns given state object', () => {
         // Given
-        class TestObject extends ReduxObject {}
-
-        const existingState = {};
+        const state = {};
 
         // When
-        const updatedState = updateOneHandler(existingState, {
-          objectType: TestObject,
-          update: null,
-        });
+        const updatedState = updateOneHandler(state, { sectionName: '' });
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(updatedState).toBe(state);
       });
 
-      test('if payload update is empty object, returns given state', () => {
-        // Given
-        class TestObject extends ReduxObject {}
-
-        const existingState = {};
-
+      test('if sectionName is invalid, publishes warning', () => {
         // When
-        const updatedState = updateOneHandler(existingState, {
-          objectType: TestObject,
-          update: {},
-        });
+        updateOneHandler({}, {});
 
         // Then
-        expect(updatedState).toBe(existingState);
+        expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+      });
+
+      describe('given defined sectionName', () => {
+        test('if payload update is missing, returns given state', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          const updatedState = updateOneHandler(existingState, {
+            sectionName: 'SomeSectionName',
+          });
+
+          // Then
+          expect(updatedState).toBe(existingState);
+        });
+
+        test('if payload update is empty object, returns given state', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          const updatedState = updateOneHandler(existingState, {
+            sectionName: 'SomeSectionName',
+            update: {},
+          });
+
+          // Then
+          expect(updatedState).toBe(existingState);
+        });
+
+        test('if payload update is invalid, publishes warning', () => {
+          // Given
+          const existingState = {};
+
+          // When
+          updateOneHandler(existingState, {
+            sectionName: 'SomeSectionName',
+          });
+
+          // Then
+          expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+        });
       });
     });
   });
 });
 
-test('state slice for object is undefined, returns given state', () => {
+test('state slice for sectionName is undefined, returns given state', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
   const existingState = {};
 
   // When
   const updatedState = updateOneHandler(existingState, {
-    objectType: TestObject,
+    sectionName: 'SomeSection',
     update: { propA: 5 },
   });
 
@@ -207,15 +167,14 @@ test('state slice for object is undefined, returns given state', () => {
   expect(updatedState).toBe(existingState);
 });
 
-test('state slice for object is empty, returns given state', () => {
+test('state slice for sectionName is empty, returns given state', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
-  const existingState = { [TestObject.stateSlice]: {} };
+  const sectionName = 'SomeSection';
+  const existingState = { [sectionName]: {} };
 
   // When
   const updatedState = updateOneHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
     update: { propA: 5 },
   });
 
@@ -225,115 +184,88 @@ test('state slice for object is empty, returns given state', () => {
 
 test('if no filter specified, updates first object in state slice', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, 10);
-  const testObject2 = new TestObject(2, 20);
+  const sectionName = 'SomeSection';
+  const object1 = { id: '1a', propA: 1, propB: 10 };
+  const object2 = { id: '1b', propA: 2, propB: 20 };
+  const existingStateSlice = {
+    [object1.id]: object1,
+    [object2.id]: object2,
+  };
   const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-    },
+    [sectionName]: existingStateSlice,
   };
 
   // When
   const updatedState = updateOneHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
     update: { propA: 5, propB: x => x * 2 },
   });
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(
-    existingState[TestObject.stateSlice],
-  );
-  expect(updatedState[TestObject.stateSlice][testObject1.id]).not.toBe(
-    existingState[TestObject.stateSlice][testObject1.id],
-  );
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
+  expect(updatedState[sectionName][object1.id]).not.toBe(object1);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
-      [testObject1.id]: { ...testObject1, propA: 5, propB: 20 },
-      [testObject2.id]: testObject2,
+    [sectionName]: {
+      [object1.id]: { ...object1, propA: 5, propB: 20 },
+      [object2.id]: object2,
     },
   });
 });
 
 test('if objects are found which match filter, updates first matching object', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, 10);
-  const testObject2 = new TestObject(2, 20);
-  const testObject3 = new TestObject(2, 20);
+  const sectionName = 'SomeSection';
+  const object1 = { id: '1a', propA: 1, propB: 10 };
+  const object2 = { id: '1b', propA: 2, propB: 20 };
+  const object3 = { id: '1c', propA: 2, propB: 20 };
   const existingStateSlice = {
-    [testObject1.id]: testObject1,
-    [testObject2.id]: testObject2,
-    [testObject3.id]: testObject3,
+    [object1.id]: object1,
+    [object2.id]: object2,
+    [object3.id]: object3,
   };
   const existingState = {
-    [TestObject.stateSlice]: existingStateSlice,
+    [sectionName]: existingStateSlice,
   };
 
   // When
   const updatedState = updateOneHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
     filter: { propA: 2, propB: 20 },
-    update: { propA: 6, propB: x => x * 3 },
+    update: { propA: 5, propB: x => x * 2 },
   });
 
   // Then
   expect(updatedState).not.toBe(existingState);
-  expect(updatedState[TestObject.stateSlice]).not.toBe(
-    existingState[TestObject.stateSlice],
-  );
-  expect(updatedState[TestObject.stateSlice][testObject2.id]).not.toBe(
-    existingState[TestObject.stateSlice][testObject2.id],
-  );
+  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
+  expect(updatedState[sectionName][object2.id]).not.toBe(object2);
   expect(updatedState).toEqual({
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: { ...testObject2, propA: 6, propB: 60 },
-      [testObject3.id]: testObject3,
+    [sectionName]: {
+      [object1.id]: object1,
+      [object2.id]: { ...object2, propA: 5, propB: 40 },
+      [object3.id]: object3,
     },
   });
 });
 
 test('but no matching object, returns given state', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, 10);
-  const testObject2 = new TestObject(2, 20);
+  const sectionName = 'SomeSection';
+  const object1 = { id: '1a', propA: 1, propB: 10 };
+  const object2 = { id: '1b', propA: 2, propB: 20 };
+  const existingStateSlice = {
+    [object1.id]: object1,
+    [object2.id]: object2,
+  };
   const existingState = {
-    [TestObject.stateSlice]: {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-    },
+    [sectionName]: existingStateSlice,
   };
 
   // When
   const updatedState = updateOneHandler(existingState, {
-    objectType: TestObject,
+    sectionName,
     filter: { propA: 3, propB: 30 },
-    update: { propA: 7, propB: x => x * 4 },
+    update: { propA: 5, propB: x => x * 2 },
   });
 
   // Then
@@ -357,31 +289,24 @@ describe('update errors', () => {
 
   test('if objects are found which match filter but update fails, returns given state', () => {
     // Given
-    class TestObject extends ReduxObject {
-      constructor(propA, propB) {
-        super();
-        this.propA = propA;
-        this.propB = propB;
-      }
-    }
-
-    const testObject1 = new TestObject(1, 10);
-    const testObject2 = new TestObject(2, 20);
-    const testObject3 = new TestObject(2, 20);
+    const sectionName = 'SomeSection';
+    const object1 = { id: '1a', propA: 1, propB: 10 };
+    const object2 = { id: '1b', propA: 2, propB: 20 };
+    const object3 = { id: '1c', propA: 2, propB: 20 };
     const existingStateSlice = {
-      [testObject1.id]: testObject1,
-      [testObject2.id]: testObject2,
-      [testObject3.id]: testObject3,
+      [object1.id]: object1,
+      [object2.id]: object2,
+      [object3.id]: object3,
     };
     const existingState = {
-      [TestObject.stateSlice]: existingStateSlice,
+      [sectionName]: existingStateSlice,
     };
 
     // When
     const updatedState = updateOneHandler(existingState, {
-      objectType: TestObject,
+      sectionName,
       filter: { propA: 2, propB: 20 },
-      update: { propA: 6, propB: x => x.concat('0') },
+      update: { propA: 5, propB: x => x.concat('0') },
     });
 
     // Then

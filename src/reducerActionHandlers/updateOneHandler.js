@@ -2,30 +2,25 @@ import warning from 'warning';
 import isReduxObjectType from '../utils/isReduxObjectType';
 import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import { filterOne, updateOne } from '../sliceInteraction';
+import isPopulatedString from '../utils/isPopulatedString';
 
-function updateOneHandler(state, { objectType, filter, update } = {}) {
+const invalidInputsWarning = `A DRIVER_UPDATE_ONE action was ignored because it's inputs did not meet the following criteria:
+- State must be defined and not null.
+- Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an update object property with at least one child property.`;
+
+function updateOneHandler(state, payload) {
+  const { sectionName, filter, update } = payload || {};
   if (
     !state
-    || !isReduxObjectType(objectType)
+    || !isPopulatedString(sectionName)
     || !isObjectWithOwnProps(update)
   ) {
-    warning(
-      state,
-      'A DRIVER_UPDATE_ONE action was ignored because the given state was null or undefined.',
-    );
-    warning(
-      isReduxObjectType(objectType),
-      "A DRIVER_UPDATE_ONE action was ignored because the payload's objectType does not extend ReduxObject.",
-    );
-    warning(
-      isObjectWithOwnProps(update),
-      "A DRIVER_UPDATE_ONE action was ignored because the payload's update was empty or missing.",
-    );
+    warning(false, invalidInputsWarning);
     return state || {};
   }
 
-  const { stateSlice } = objectType;
-  const currentTable = state[stateSlice];
+  const currentTable = state[sectionName];
   if (!isObjectWithOwnProps(currentTable)) {
     return state;
   }
@@ -47,7 +42,7 @@ function updateOneHandler(state, { objectType, filter, update } = {}) {
 
   return {
     ...state,
-    [stateSlice]: { ...currentTable, [newItem.id]: newItem },
+    [sectionName]: { ...currentTable, [newItem.id]: newItem },
   };
 }
 
