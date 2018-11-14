@@ -11,6 +11,7 @@ import {
 import reducer from '../src/reducer';
 import ReduxObject from '../src/ReduxObject';
 import ReduxSection from '../src/ReduxSection';
+import { resetSection } from '../src/driverActions/sectionActions';
 
 test('inserted objects using insertOne action can be located with access driver findMany selector', () => {
   // Given
@@ -448,4 +449,36 @@ test('update section of state with updateSection, then use getSection selector t
     token: 'newToken',
     userId: 'someId',
   });
+});
+
+test('update section of state with updateSection, then reset section, then use getSection to make sure it reset', () => {
+  // Given
+  class Auth extends ReduxSection {
+    static get defaultState() {
+      return {
+        token: 'defaultToken',
+        userId: 'defaultId',
+      };
+    }
+  }
+
+  let state = {
+    [Auth.stateSlice]: Auth.defaultState,
+  };
+
+  // When
+  const updateAction = updateSection(Auth, {
+    token: 'newToken',
+    userId: 'newId',
+  });
+  state = reducer(state, updateAction);
+
+  const resetAction = resetSection(Auth);
+  state = reducer(state, resetAction);
+
+  const selector = getSection(Auth);
+  const section = selector(state);
+
+  // Then
+  expect(section).toEqual(Auth.defaultState);
 });
