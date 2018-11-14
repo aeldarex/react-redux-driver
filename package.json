@@ -1,6 +1,6 @@
 {
   "name": "react-redux-driver",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Driver to reduce the amount of boiler-plate required to use redux with react.",
   "repository": "https://github.com/aeldarex/react-redux-driver.git",
   "author": "Ian Middleton <ian.middleton.scl@gmail.com>",
