@@ -1,5 +1,5 @@
 export { publishAction } from './genericActions';
-export { updateSection } from './sectionActions';
+export { updateSection, resetSection } from './sectionActions';
 export {
   insertOne,
   insertMany,

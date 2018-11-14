@@ -1,6 +1,7 @@
 export {
   publishAction,
   updateSection,
+  resetSection,
   insertOne,
   insertMany,
   updateOne,
