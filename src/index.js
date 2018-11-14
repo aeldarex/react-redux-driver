@@ -11,4 +11,4 @@ export {
 export { default as driverReducer } from './reducer';
 export { default as ReduxObject } from './ReduxObject';
 export { default as ReduxSection } from './ReduxSection';
-export { findOne, findMany } from './selectors';
+export { findOne, findMany, getSection } from './selectors';

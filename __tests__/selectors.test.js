@@ -1,11 +1,13 @@
 import sinon from 'sinon';
 import * as CreateFindOneSelectorModule from '../src/selectorCreation/createFindOneSelector';
 import * as CreateFindManySelectorModule from '../src/selectorCreation/createFindManySelector';
+import * as CreateGetSectionSelectorModule from '../src/selectorCreation/createGetSectionSelector';
 import ReduxObject from '../src/ReduxObject';
-import { findOne, findMany } from '../src/selectors';
+import { findOne, findMany, getSection } from '../src/selectors';
 
 let createFindOneSelectorStub;
 let createFindManySelectorStub;
+let createGetSectionSelectorStub;
 
 beforeAll(() => {
   createFindOneSelectorStub = sinon.stub(
@@ -16,16 +18,22 @@ beforeAll(() => {
     CreateFindManySelectorModule,
     'default',
   );
+  createGetSectionSelectorStub = sinon.stub(
+    CreateGetSectionSelectorModule,
+    'default',
+  );
 });
 
 afterEach(() => {
   createFindOneSelectorStub.reset();
   createFindManySelectorStub.reset();
+  createGetSectionSelectorStub.reset();
 });
 
 afterAll(() => {
   createFindOneSelectorStub.restore();
   createFindManySelectorStub.restore();
+  createGetSectionSelectorStub.restore();
 });
 
 test('findOne returns selector with given object type and filter', () => {
@@ -60,4 +68,20 @@ test('findMany returns selector with given object type and filter', () => {
 
   // Then
   expect(selector).toBe(findManySelector);
+});
+
+test('getSection returns selector with given sectionDefinition', () => {
+  // Given
+  const sectionDefinition = {};
+
+  const getSectionSelector = {};
+  createGetSectionSelectorStub
+    .withArgs(sinon.match.same(sectionDefinition))
+    .returns(getSectionSelector);
+
+  // When
+  const selector = getSection(sectionDefinition);
+
+  // Then
+  expect(selector).toBe(getSectionSelector);
 });
