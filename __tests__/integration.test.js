@@ -1,4 +1,4 @@
-import { findOne, findMany } from '../src/selectors';
+import { findOne, findMany, getSection } from '../src/selectors';
 import {
   updateSection,
   insertOne,
@@ -425,7 +425,7 @@ test('insert objects using insertMany action, then update all with new nested fi
   });
 });
 
-test('update section of state with updateSection, then check state for updates', () => {
+test('update section of state with updateSection, then use getSection selector to view updates', () => {
   // Given
   class Auth extends ReduxSection {}
 
@@ -440,11 +440,12 @@ test('update section of state with updateSection, then check state for updates',
   const updateAction = updateSection(Auth, { token: 'newToken' });
   state = reducer(state, updateAction);
 
+  const selector = getSection(Auth);
+  const section = selector(state);
+
   // Then
-  expect(state).toEqual({
-    [Auth.stateSlice]: {
-      token: 'newToken',
-      userId: 'someId',
-    },
+  expect(section).toEqual({
+    token: 'newToken',
+    userId: 'someId',
   });
 });
