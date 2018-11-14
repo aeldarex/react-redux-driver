@@ -4,12 +4,36 @@
 [![build status](https://travis-ci.org/aeldarex/react-redux-driver.svg?branch=master)](https://travis-ci.org/aeldarex/react-redux-driver)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/aeldarex/react-redux-driver/blob/master/README.md)
 
-A set of reducer functions, dispatchable actions, and selector creators to simplify CRUD operations with react-redux.
+A powerful set of reducer functions, dispatchable actions, and selector creators to simplify operations with react-redux.
+
+Need to update a user's token in the redux store?
+
+```javascript
+updateSection(Auth, { token: /*new token*/ })
+```
+
+Or what about adding a new friend connection for my user?
+
+```javascript
+const friend = new Friend('Bob');
+insertOne(friend);
+```
+
+Or getting all of my user's friends whose userId starts with 'B' so they can view them in a list?
+
+```javascript
+const friendSelector = findMany(Friend, { userId: x => x.startsWith('B') });
+const friends = friendSelector(state);
+```
+
+The react-redux-driver gives you all of the above functionality and more out of the box, no custom reducers or action creators needed.
 
 ## Installation
 
 ```
+
 npm install --save react-redux-driver
+
 ```
 
 ## Adding the Reducer
@@ -36,44 +60,221 @@ The main takeaway is that it's important for the driverReducer to operate at the
 
 ## Manipulating The State
 
-Once the reducer is in place we're ready to start using the driver's dispatch functions to manipulate the state. But before we can start injecting our actions we need to discuss the concepts of _ReduxSection_, _ReduxObject_, _filter_, and _update_ objects.
+Once the reducer is in place we're ready to start using the driver's dispatch functions to manipulate the state. The dispatch functions can be split into two types, actions which interact with state _sections_ and actions which interact with collections of state _objects_.
 
-## What is a ReduxSection
+## What is a state _section_?
 
-A ReduxSection is an object model for data you want to store in a top-level section of the state. You will usually want ReduxSection models for items like user specific configuration or a user's authentication data.
+A state _section_ is state which will be used to contain a single, unique set of values. The simplest example of a state section would be the area of state you use to store a user's token and other credentials.
+
+To model a state section, the react-redux-driver supplies a ReduxSection class. Custom section classes can extend this base class to enable powerful functionality in combination with the driver's dispatch actions.
 
 ```javascript
 import { ReduxSection } from 'react-redux-driver';
 
-class Auth extends ReduxSection {
-  constructor(userId, accessToken) {
-    super();
-    this.userId = userId;
-    this.accessToken = accessToken;
+class AuthSection extends ReduxSection {
+  static get stateSlice() {
+    return 'auth';
+  }
+
+  static get defaultState() {
+    return {
+      userId: null,
+      token: null
+    };
   }
 }
 ```
 
-## What is a ReduxObject?
+### Anatomy of a ReduxSection
 
-A ReduxObject is an object model for data which you want to store in multiple instances. You will usually want ReduxObject models for items like friends of a user, or a user's posts on a message board.
+ReduxSection classes currently have two properties which can be overidden as in the above example.
+
+- stateSlice: Defines where in the overall state this section will be stored. Defaults to the class name if not specified.
+- defaultState: Defines how this _section_ should look by default. This comes into play when resetting the state. Default to an empty object if not specified.
+
+### Updating a state _section_
+
+So we've got our cool AuthSection class, but just having the class doesn't do anything for us in terms of our redux state. To begin actually making changes to the state the driver provides the following two actions.
+
+```typescript
+updateSection(sectionDefinition: typeof ReduxSection, update: any);
+resetSection(sectionDefinition: typeof ReduxSection);
+```
+
+Both actions update the section of state corresponding to the given ReduxSection, but they do so in a slightly different manner. The updateSection action allows for custom updates, applying the changes from the update object to the state. The resetSection action, on the other hand, 'resets' the state back to the defaultState described by the ReduxSection definition.
+
+### Reading a state _section_
+
+Reading the section of state defined by our AuthSection class follows similar guidelines.
+
+```typescript
+getSection(sectionDefinition: typeof ReduxSection);
+```
+
+This creates a selector which will read out the state associated to the given ReduxSection.
+
+### How do I actually use these with react and react-redux?
+
+Below is a small example component using these concepts in action.
+
+```javascript
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { getSection, updateSection, resetSection } from 'react-redux-driver';
+import { Auth } from './models/sections'; // Same Auth ReduxSection as above
+
+class MyComponent extends Component {
+  updateToken = newToken => {
+    updateSection(Auth, { token: newToken }); // Overwrites state.auth.token with the value of newToken
+  };
+
+  logout = () => {
+    resetSection(Auth); // Resets state.auth to be { userId: null, token: null }
+  };
+
+  render() {
+    const isAuthenticated = this.props.token != null;
+    // render the component
+  }
+}
+
+const authSelector = getSection(Auth);
+const mapStateToProps = state => {
+  const auth = authSelector(state); // selects state.auth
+  return {
+    token: auth.token
+  };
+};
+
+const mapDispatchToProps = { updateSection, resetSection };
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MyComponent);
+```
+
+And that's it, no reducer code or action creators required!
+
+## What is a state _object_?
+
+So we just finished discussing state _sections_, but not everything we want to store in redux makes sense as a _section_. Sometimes we'll have objects we want to store a lot of, and this is where the state _object_ concept comes into play.
+
+To model a state object, the react-redux-driver supplies a ReduxObject class. Custom object classes can extend this base class to enable a ton of powerful functionality, just like the ReduxSection class.
 
 ```javascript
 import { ReduxObject } from 'react-redux-driver';
 
 class Friend extends ReduxObject {
-  constructor(name, team, scoring) {
+  constructor(userId, pending) {
     super();
-    this.name = name;
-    this.team = team;
-    this.scoring = scoring;
+    this.userId = userId;
+    this.pending = pending;
+  }
+
+  static get stateSlice() {
+    return 'friends';
   }
 }
 ```
 
+### Anatomy of a ReduxObject
+
+ReduxObject classes currently have one property which can be overidden as in the above example.
+
+- stateSlice: Defines where in the overall state these objects will be stored. Defaults to the class name plus the letter 's' if not specified.
+
+### Updating a collection of state _objects_
+
+So we've defined a Friend class and we want to add one or more of them to our state. To do so we can create some new Friend objects and insert them with the following methods.
+
+```typescript
+insertOne(object: ReduxObject);
+insertMany(objects: Array<ReduxObject>);
+```
+
+Once these objects exist in our state we can update them.
+
+```typescript
+updateOne(objectType: typeof ReduxObject, filter: any, update: any);
+updateMany(objectType: typeof ReduxObject, filter: any, update: any);
+```
+
+Or delete them.
+
+```typescript
+deleteOne(objectType: typeof ReduxObject, filter: any);
+deleteMany(objectType: typeof ReduxObject, filter: any);
+```
+
+All the actions are pretty self-explanatory, but the filter object is something we haven't seen yet (as filtering really doesn't make sense in terms of _sections_). With state _objects_, we're storing a number of a given object in our state, so the filter object allows us to describe which of those object we want to apply the action to.
+
+### Reading a collection of state _objects_
+
+Reading the stored objects follows a similar pattern to reading from a state _section_, but once again we utilize a filter to specify specific items.
+
+```typescript
+findOne(objectType: typeof ReduxObject, filter: any);
+findMany(objectType: typeof ReduxObject, filter: any);
+```
+
+Both methods create a selector which will search the section of state specified by the given ReduxObject class for anything matching the given filter. All objects matching the filter are returned.
+
+### How do I actually use these with react and react-redux?
+
+Below is a small example component using these concepts in action.
+
+```javascript
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { findMany, insertOne, updateOne, deleteOne } from 'react-redux-driver';
+import { Friend } from './models/objects'; // Same Friend ReduxObject as above
+
+class MyComponent extends Component {
+  addFriend = friendId => {
+    const newFriend = new Friend(friendId, true);
+    insertOne(newFriend); // Adds the newly created Friend to state.friends
+  };
+
+  acceptFriend = friendId => {
+    updateOne(Friend, { userId: friendId }, { pending: false }); // Finds the friend with userId === friendId in state.friends and sets its pending prop to false
+  };
+
+  removeFriend = friendId => {
+    deleteOne(Friend, { userId: friendId }); // Deletes the friend with userId === friendId in state.friends
+  };
+
+  render() {
+    const { pendingFriends } = this.props;
+    // render the component
+  }
+}
+
+const pendingFriendsSelector = findMany(Friend, { pending: true });
+const mapStateToProps = state => {
+  const pendingFriends = pendingFriendsSelector(state); // selects all friends in state.friends which have pending as true
+  return {
+    pendingFriends
+  };
+};
+
+const mapDispatchToProps = { insertOne, updateOne, deleteOne };
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(MyComponent);
+```
+
+And as with state _sections_, no reducer code or action creators are required!
+
+## Filters and Updates
+
+So we've briefly discussed the ideas behind filter and update objects, but it's important to go into a little more detail describing how they work because a lot of the driver's power comes from their use.
+
 ### What is a filter object?
 
-A filter object is used to describe which objects of a given type should be considered for an action. So let's say we store a bunch of the above Friend objects in our state with their names, teams, and scoring. In our game we have a high score of 10,000 points and want to consider all the friends on team 'blue' who have better high scores. A filter to find those friends would be as follows.
+A filter object is used to describe which objects of a given type should be considered for an action. So let's say we store a bunch of the above Friend objects in our state with some new fields added: team and scoring. In our game we have a high score of 10,000 points and want to consider all the friends on team 'blue' who have better high scores. A filter to find those friends would be as follows.
 
 ```javascript
 {
@@ -119,95 +320,6 @@ As javascript is not a typed language, there is no guarantee that all of our obj
 
 - filter: If a filter throws an error then the object which caused the Error will be considered as failing the filter.
 - update: If an update throws an error the object will not be updated and a warning will be published.
-
-## Dispatch Actions
-
-Equipped with the knowledge of how to create ReduxSection, ReduxObject, filter, and update objects, let's look at the dispatchable actions available to us as part of the driver.
-
-### Create Actions
-
-```typescript
-insertOne(item: ReduxObject);
-insertMany(items: Array<ReduxObject>);
-```
-
-The insert actions will insert one or more items into the state. If you attempt to insert an object twice, or set the id field manually and attempt to insert two objects with the same id, the second insert for the duplicated id will be ignored and a warning will be published.
-
-### Update Actions
-
-```typescript
-updateOne(objectType: typeof ReduxObject, filter: any, update: any);
-updateMany(objectType: typeof ReduxObject, filter: any, update: any);
-updateSection(sectionName: ReduxSection, update: any);
-```
-
-The updateOne and updateMany actions will update one or more items currently existing in the state. The objectType describes the type of object to be updated, the filter outlines which objects of that type should be considered, and the update itself defines the changes which should be made to the items matching the filter. If updateOne is given a filter which matches more than one object then only the first object found will be updated (note that in terms of ordering the objects are tracked by id).
-
-The updateSection action differs in that it's focused on updating a specific section of the state rather than doing a CRUD operation on given object(s). This is most useful when wanting to manage a state object where you will only ever want a single object. A good example of this would be storing a string token in an 'Auth' section of the state. You'll never want multiple auth objects, so instead of creating a ReduxObject with the token and using insertOne, you would create a ReduxSection with the token and use updateSection. This section could then be referenced with simply a 'state.Auth' in your mapStateToProps.
-
-### Delete Actions
-
-```typescript
-deleteOne(objectType: typeof ReduxObject, filter: any);
-deleteMany(objectType: typeof ReduxObject, filter: any);
-```
-
-The delete actions will delete one or more items currently existing in the state. The objectType describes the type of object to be deleted and then the filter outlines which object of that type should be considered. As with updateOne, if deleteOne is given a filter which matches more than one object then only the first is deleted (the note about object ordering applies here as well).
-
-### Using the Actions
-
-To use the actions, add them to your component's mapDispatchToProps.
-
-```javascript
-import { connect } from 'react-redux';
-import { insertMany, deleteMany } from 'react-redux-driver';
-
-// const MyComponent = ...
-
-// const mapStateToProps = ...
-
-const mapDispatchToProps = { updateSection, insertMany, deleteMany };
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(MyComponent);
-```
-
-## Reading The State With Selectors
-
-So now that the state can be modified, we will also want to read our modifications back into our components. This is achieved using filter objects in combination with two provided selector functions.
-
-```typescript
-findOne(objectType: typeof ReduxObject, filter: any);
-findMany(objectType: typeof ReduxObject, filter: any);
-```
-
-The find functions create selectors for finding one or more items in the state. These use [reselect](https://github.com/reduxjs/reselect) under the hood, so they will never recompute unless the section of state for a given object type changes. Additionally, because they create plain selectors, the output can be composed into other, more complex, selectors as well.
-
-To use them, simply add the selectors they create to your component's mapStateToProps.
-
-```javascript
-import { connect } from 'react-redux';
-import { findMany } from 'react-redux-driver';
-import { Friend } from './models';
-
-// const MyComponent = ...
-
-const blueFriendSelector = findMany(Friend, { team: 'blue' });
-const mapStateToProps = state => {
-  return {
-    blueFriends: blueFriendSelector(state)
-  };
-};
-
-// const mapDispatchToProps = ...
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(MyComponent);
-```
 
 ## License
 
