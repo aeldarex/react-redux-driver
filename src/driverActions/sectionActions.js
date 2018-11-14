@@ -13,4 +13,18 @@ function updateSection(sectionDefinition, update) {
   };
 }
 
-export { updateSection };
+function resetSection(sectionDefinition) {
+  const { stateSlice, defaultState } = sectionDefinition || {};
+  const sectionName = stateSlice || '';
+  const update = defaultState || {};
+
+  return {
+    type: DRIVER_UPDATE_SECTION,
+    payload: {
+      sectionName,
+      update,
+    },
+  };
+}
+
+export { updateSection, resetSection };
