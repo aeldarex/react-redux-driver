@@ -2,6 +2,49 @@ import sinon from 'sinon';
 import ReduxObject from '../../src/ReduxObject';
 import createFindManySelector from '../../src/selectorCreation/createFindManySelector';
 
+const invalidParametersWarning = 'Warning: To create a working selector objectDefinition must have a stateSlice property.';
+
+describe('invalid parameters', () => {
+  let errorStub;
+
+  beforeAll(() => {
+    errorStub = sinon.stub(console, 'error');
+  });
+
+  afterEach(() => {
+    errorStub.reset();
+  });
+
+  afterAll(() => {
+    errorStub.restore();
+  });
+
+  test('if objectDefinition is missing, publishes warning', () => {
+    // When
+    createFindManySelector();
+
+    // Then
+    expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
+  });
+
+  test('if objectDefinition does not have a stateSlice prop, publishes warning', () => {
+    // When
+    createFindManySelector({});
+
+    // Then
+    expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
+  });
+
+  test('if objectDefinition is missing, selector returns empty object', () => {
+    // When
+    const selector = createFindManySelector();
+    const result = selector({});
+
+    // Then
+    expect(result).toEqual([]);
+  });
+});
+
 test('if filter not specified selector returns all items of type in state', () => {
   // Given
   class TestObject extends ReduxObject {}
@@ -79,22 +122,4 @@ test('if item throws error in filter function tree selector ignores item', () =>
 
   // Then
   expect(result).toEqual([testObject1, testObject3]);
-});
-
-test('given objectDefinition that does not have a stateSlice property publishes warning', () => {
-  // Given
-  const errorStub = sinon.stub(console, 'error');
-
-  // When
-  createFindManySelector({});
-
-  // Then
-  expect(
-    errorStub.calledWith(
-      'Warning: To create a working selector objectDefinition must have a stateSlice property.',
-    ),
-  ).toBe(true);
-
-  // Cleanup
-  errorStub.restore();
 });

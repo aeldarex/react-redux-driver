@@ -10,7 +10,8 @@ function createFindManySelector(objectDefinition, filter) {
     'To create a working selector objectDefinition must have a stateSlice property.',
   );
 
-  const sliceSelector = createSliceSelector(objectDefinition.stateSlice);
+  const { stateSlice } = objectDefinition || {};
+  const sliceSelector = createSliceSelector(stateSlice);
   let selector = createSelector(
     sliceSelector,
     allValuesSelector,

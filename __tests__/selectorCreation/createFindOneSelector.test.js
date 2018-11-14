@@ -2,6 +2,49 @@ import sinon from 'sinon';
 import ReduxObject from '../../src/ReduxObject';
 import createFindOneSelector from '../../src/selectorCreation/createFindOneSelector';
 
+const invalidParametersWarning = 'Warning: To create a working selector objectDefinition must have a stateSlice property.';
+
+describe('invalid parameters', () => {
+  let errorStub;
+
+  beforeAll(() => {
+    errorStub = sinon.stub(console, 'error');
+  });
+
+  afterEach(() => {
+    errorStub.reset();
+  });
+
+  afterAll(() => {
+    errorStub.restore();
+  });
+
+  test('if objectDefinition is missing, publishes warning', () => {
+    // When
+    createFindOneSelector();
+
+    // Then
+    expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
+  });
+
+  test('if objectDefinition does not have a stateSlice prop, publishes warning', () => {
+    // When
+    createFindOneSelector({});
+
+    // Then
+    expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
+  });
+
+  test('if objectDefinition is missing, selector returns empty object', () => {
+    // When
+    const selector = createFindOneSelector();
+    const result = selector({});
+
+    // Then
+    expect(result).not.toBeDefined();
+  });
+});
+
 test('if filter not specified selector returns first item of type in state', () => {
   // Given
   class TestObject extends ReduxObject {}
@@ -79,22 +122,4 @@ test('if item throws error in filter function tree selector ignores item', () =>
 
   // Then
   expect(result).toEqual(testObject3);
-});
-
-test('given objectDefinition that does not have a stateSlice property publishes warning', () => {
-  // Given
-  const errorStub = sinon.stub(console, 'error');
-
-  // When
-  createFindOneSelector({});
-
-  // Then
-  expect(
-    errorStub.calledWith(
-      'Warning: To create a working selector objectDefinition must have a stateSlice property.',
-    ),
-  ).toBe(true);
-
-  // Cleanup
-  errorStub.restore();
 });
