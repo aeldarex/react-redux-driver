@@ -9,27 +9,23 @@ import {
   deleteMany,
 } from '../src/driverActions';
 import reducer from '../src/reducer';
-import ReduxObject from '../src/ReduxObject';
-import ReduxSection from '../src/ReduxSection';
-import { resetSection } from '../src/driverActions/sectionActions';
 
 test('inserted objects using insertOne action can be located with access driver findMany selector', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a' };
+  const testObject2 = { id: '1b' };
 
   let state = {};
 
   // When
-  const action1 = insertOne(testObject1);
+  const action1 = insertOne(sectionName, testObject1);
   state = reducer(state, action1);
 
-  const action2 = insertOne(testObject2);
+  const action2 = insertOne(sectionName, testObject2);
   state = reducer(state, action2);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -38,18 +34,17 @@ test('inserted objects using insertOne action can be located with access driver 
 
 test('inserted objects using insertMany action can be located with access driver findMany selector', () => {
   // Given
-  class TestObject extends ReduxObject {}
-
-  const testObject1 = new TestObject();
-  const testObject2 = new TestObject();
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a' };
+  const testObject2 = { id: '1b' };
 
   let state = {};
 
   // When
-  const action = insertMany([testObject1, testObject2]);
+  const action = insertMany(sectionName, [testObject1, testObject2]);
   state = reducer(state, action);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -58,22 +53,16 @@ test('inserted objects using insertMany action can be located with access driver
 
 test('inserted objects using insertMany, then delete one with deleteOne, then get all remaining with access driver findMany selector', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA) {
-      super();
-      this.propA = propA;
-    }
-  }
-
-  const testObject1 = new TestObject(1);
-  const testObject2 = new TestObject(2);
-  const testObject3 = new TestObject(3);
-  const testObject4 = new TestObject(4);
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a', propA: 1 };
+  const testObject2 = { id: '1b', propA: 2 };
+  const testObject3 = { id: '1c', propA: 3 };
+  const testObject4 = { id: '1d', propA: 4 };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([
+  const insertAction = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -81,10 +70,10 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = deleteOne(TestObject, { propA: 3 });
+  const deleteAction = deleteOne(sectionName, { propA: 3 });
   state = reducer(state, deleteAction);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -93,22 +82,16 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
 
 test('inserted objects using insertMany, then delete some with deleteMany, then get all remaining with access driver findMany selector', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA) {
-      super();
-      this.propA = propA;
-    }
-  }
-
-  const testObject1 = new TestObject(1);
-  const testObject2 = new TestObject(2);
-  const testObject3 = new TestObject(3);
-  const testObject4 = new TestObject(2);
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a', propA: 1 };
+  const testObject2 = { id: '1b', propA: 2 };
+  const testObject3 = { id: '1c', propA: 3 };
+  const testObject4 = { id: '1d', propA: 2 };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([
+  const insertAction = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -116,10 +99,10 @@ test('inserted objects using insertMany, then delete some with deleteMany, then 
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = deleteMany(TestObject, { propA: 2 });
+  const deleteAction = deleteMany(sectionName, { propA: 2 });
   state = reducer(state, deleteAction);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -128,40 +111,36 @@ test('inserted objects using insertMany, then delete some with deleteMany, then 
 
 test('insert objects using insertMany action, then find specific objects using complex filter with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(sectionNumber, childObj1, childObj2) {
-      super();
-      this.sectionNumber = sectionNumber;
-      this.childObj1 = childObj1;
-      this.childObj2 = childObj2;
-    }
-  }
-
-  const testObject1 = new TestObject(
-    1,
-    { propA: 24 },
-    { propB: 'cool string' },
-  );
-  const testObject2 = new TestObject(
-    1,
-    { propA: 15 },
-    { propB: 'lame string' },
-  );
-  const testObject3 = new TestObject(
-    1,
-    { propA: 9 },
-    { propB: 'super cool string' },
-  );
-  const testObject4 = new TestObject(
-    1,
-    { propA: 28 },
-    { propB: 'super lame string' },
-  );
+  const sectionName = 'TestObjects';
+  const testObject1 = {
+    id: '1a',
+    sectionNumber: 1,
+    childObj1: { propA: 24 },
+    childObj2: { propB: 'cool string' },
+  };
+  const testObject2 = {
+    id: '1b',
+    sectionNumber: 1,
+    childObj1: { propA: 15 },
+    childObj2: { propB: 'lame string' },
+  };
+  const testObject3 = {
+    id: '1c',
+    sectionNumber: 1,
+    childObj1: { propA: 9 },
+    childObj2: { propB: 'super cool string' },
+  };
+  const testObject4 = {
+    id: '1d',
+    sectionNumber: 1,
+    childObj1: { propA: 28 },
+    childObj2: { propB: 'super lame string' },
+  };
 
   let state = {};
 
   // When
-  const action = insertMany([
+  const action = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -169,7 +148,7 @@ test('insert objects using insertMany action, then find specific objects using c
   ]);
   state = reducer(state, action);
 
-  const selector = findMany(TestObject, {
+  const selector = findMany(sectionName, {
     sectionNumber: 1,
     childObj1: { propA: x => x < 30 },
     childObj2: { propB: x => x.includes('cool') },
@@ -182,23 +161,16 @@ test('insert objects using insertMany action, then find specific objects using c
 
 test('insert objects using insertMany action, then delete one with deleteOne using complex filter, then get all remaining with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'hello' });
-  const testObject2 = new TestObject(2, { propC: 'goodbye' });
-  const testObject3 = new TestObject(3, { propC: 'goodbye' });
-  const testObject4 = new TestObject(4, { propC: 'hello' });
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a', propA: 1, propB: { propC: 'hello' } };
+  const testObject2 = { id: '1b', propA: 2, propB: { propC: 'goodbye' } };
+  const testObject3 = { id: '1c', propA: 3, propB: { propC: 'goodbye' } };
+  const testObject4 = { id: '1d', propA: 4, propB: { propC: 'hello' } };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([
+  const insertAction = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -206,13 +178,13 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = deleteOne(TestObject, {
+  const deleteAction = deleteOne(sectionName, {
     propA: x => x > 1,
     propB: { propC: 'goodbye' },
   });
   state = reducer(state, deleteAction);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -221,23 +193,16 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
 
 test('insert objects using insertMany action, then delete multiple with deleteMany using complex filter, then get all remaining with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'hello' });
-  const testObject2 = new TestObject(2, { propC: 'goodbye' });
-  const testObject3 = new TestObject(3, { propC: 'goodbye' });
-  const testObject4 = new TestObject(4, { propC: 'hello' });
+  const sectionName = 'TestObjects';
+  const testObject1 = { id: '1a', propA: 1, propB: { propC: 'hello' } };
+  const testObject2 = { id: '1b', propA: 2, propB: { propC: 'goodbye' } };
+  const testObject3 = { id: '1c', propA: 3, propB: { propC: 'goodbye' } };
+  const testObject4 = { id: '1d', propA: 4, propB: { propC: 'hello' } };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([
+  const insertAction = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -245,13 +210,13 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   ]);
   state = reducer(state, insertAction);
 
-  const deleteAction = deleteMany(TestObject, {
+  const deleteAction = deleteMany(sectionName, {
     propA: x => x > 1,
     propB: { propC: 'goodbye' },
   });
   state = reducer(state, deleteAction);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -260,26 +225,35 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
 
 test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'good afternoon' });
-  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
-  const testObject3 = new TestObject(3, { propC: 'good afternoon' });
+  const sectionName = 'TestObjects';
+  const testObject1 = {
+    id: '1a',
+    propA: 1,
+    propB: { propC: 'good afternoon' },
+  };
+  const testObject2 = {
+    id: '1b',
+    propA: 2,
+    propB: { propC: 'good afternoon' },
+  };
+  const testObject3 = {
+    id: '1c',
+    propA: 3,
+    propB: { propC: 'good afternoon' },
+  };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([testObject1, testObject2, testObject3]);
+  const insertAction = insertMany(sectionName, [
+    testObject1,
+    testObject2,
+    testObject3,
+  ]);
   state = reducer(state, insertAction);
 
   const updateAction = updateOne(
-    TestObject,
+    sectionName,
     {
       propA: x => x > 1,
       propB: { propC: 'good afternoon' },
@@ -291,7 +265,7 @@ test('insert objects using insertMany action, then update one with updateOne usi
   );
   state = reducer(state, updateAction);
 
-  const selector = findMany(TestObject, { id: testObject2.id });
+  const selector = findMany(sectionName, { id: testObject2.id });
   const locatedObjects = selector(state);
 
   // Then
@@ -307,25 +281,34 @@ test('insert objects using insertMany action, then update one with updateOne usi
 
 test('insert objects using insertMany action, then get an item with findOne', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'good morning' });
-  const testObject2 = new TestObject(1, { propC: 'good afternoon' });
-  const testObject3 = new TestObject(1, { propC: 'good evening' });
+  const sectionName = 'TestObjects';
+  const testObject1 = {
+    id: '1a',
+    propA: 1,
+    propB: { propC: 'good morning' },
+  };
+  const testObject2 = {
+    id: '1b',
+    propA: 1,
+    propB: { propC: 'good afternoon' },
+  };
+  const testObject3 = {
+    id: '1c',
+    propA: 1,
+    propB: { propC: 'good evening' },
+  };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([testObject1, testObject2, testObject3]);
+  const insertAction = insertMany(sectionName, [
+    testObject1,
+    testObject2,
+    testObject3,
+  ]);
   state = reducer(state, insertAction);
 
-  const selector = findOne(TestObject, {
+  const selector = findOne(sectionName, {
     propA: 1,
     propB: { propC: x => x.includes('afternoon') },
   });
@@ -337,23 +320,32 @@ test('insert objects using insertMany action, then get an item with findOne', ()
 
 test('insert objects using insertMany action, then update some using updateMany, then get all items with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'good morning' });
-  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
-  const testObject3 = new TestObject(2, { propC: 'good evening' });
-  const testObject4 = new TestObject(3, { propC: 'good night' });
+  const sectionName = 'TestObjects';
+  const testObject1 = {
+    id: '1a',
+    propA: 1,
+    propB: { propC: 'good morning' },
+  };
+  const testObject2 = {
+    id: '1b',
+    propA: 2,
+    propB: { propC: 'good afternoon' },
+  };
+  const testObject3 = {
+    id: '1c',
+    propA: 2,
+    propB: { propC: 'good evening' },
+  };
+  const testObject4 = {
+    id: '1d',
+    propA: 3,
+    propB: { propC: 'good night' },
+  };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([
+  const insertAction = insertMany(sectionName, [
     testObject1,
     testObject2,
     testObject3,
@@ -362,13 +354,13 @@ test('insert objects using insertMany action, then update some using updateMany,
   state = reducer(state, insertAction);
 
   const updateAction = updateMany(
-    TestObject,
+    sectionName,
     { propA: 2 },
     { propB: { propC: x => x.concat('!') } },
   );
   state = reducer(state, updateAction);
 
-  const selector = findMany(TestObject, {
+  const selector = findMany(sectionName, {
     propB: { propC: x => x.includes('!') },
   });
   const locatedObjects = selector(state);
@@ -387,31 +379,32 @@ test('insert objects using insertMany action, then update some using updateMany,
 
 test('insert objects using insertMany action, then update all with new nested field using updateMany, then get all items with findMany', () => {
   // Given
-  class TestObject extends ReduxObject {
-    constructor(propA, propB) {
-      super();
-      this.propA = propA;
-      this.propB = propB;
-    }
-  }
-
-  const testObject1 = new TestObject(1, { propC: 'good morning' });
-  const testObject2 = new TestObject(2, { propC: 'good afternoon' });
+  const sectionName = 'TestObjects';
+  const testObject1 = {
+    id: '1a',
+    propA: 1,
+    propB: { propC: 'good morning' },
+  };
+  const testObject2 = {
+    id: '1b',
+    propA: 2,
+    propB: { propC: 'good afternoon' },
+  };
 
   let state = {};
 
   // When
-  const insertAction = insertMany([testObject1, testObject2]);
+  const insertAction = insertMany(sectionName, [testObject1, testObject2]);
   state = reducer(state, insertAction);
 
   const updateAction = updateMany(
-    TestObject,
+    sectionName,
     {},
     { info: { type: 'greeting' } },
   );
   state = reducer(state, updateAction);
 
-  const selector = findMany(TestObject);
+  const selector = findMany(sectionName);
   const locatedObjects = selector(state);
 
   // Then
@@ -428,20 +421,20 @@ test('insert objects using insertMany action, then update all with new nested fi
 
 test('update section of state with updateSection, then use getSection selector to view updates', () => {
   // Given
-  class Auth extends ReduxSection {}
+  const sectionName = 'auth';
 
   let state = {
-    [Auth.stateSlice]: {
+    [sectionName]: {
       token: 'someToken',
       userId: 'someId',
     },
   };
 
   // When
-  const updateAction = updateSection(Auth, { token: 'newToken' });
+  const updateAction = updateSection(sectionName, { token: 'newToken' });
   state = reducer(state, updateAction);
 
-  const selector = getSection(Auth);
+  const selector = getSection(sectionName);
   const section = selector(state);
 
   // Then
@@ -449,36 +442,4 @@ test('update section of state with updateSection, then use getSection selector t
     token: 'newToken',
     userId: 'someId',
   });
-});
-
-test('update section of state with updateSection, then reset section, then use getSection to make sure it reset', () => {
-  // Given
-  class Auth extends ReduxSection {
-    static get defaultState() {
-      return {
-        token: 'defaultToken',
-        userId: 'defaultId',
-      };
-    }
-  }
-
-  let state = {
-    [Auth.stateSlice]: Auth.defaultState,
-  };
-
-  // When
-  const updateAction = updateSection(Auth, {
-    token: 'newToken',
-    userId: 'newId',
-  });
-  state = reducer(state, updateAction);
-
-  const resetAction = resetSection(Auth);
-  state = reducer(state, resetAction);
-
-  const selector = getSection(Auth);
-  const section = selector(state);
-
-  // Then
-  expect(section).toEqual(Auth.defaultState);
 });

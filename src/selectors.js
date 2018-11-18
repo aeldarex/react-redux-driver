@@ -4,16 +4,16 @@ import {
   createGetSectionSelector,
 } from './selectorCreation';
 
-function findOne(objectDefinition, filter) {
-  return createFindOneSelector(objectDefinition, filter);
+function findOne(sectionName, filter) {
+  return createFindOneSelector(sectionName, filter);
 }
 
-function findMany(objectDefinition, filter) {
-  return createFindManySelector(objectDefinition, filter);
+function findMany(sectionName, filter) {
+  return createFindManySelector(sectionName, filter);
 }
 
-function getSection(sectionDefinition) {
-  return createGetSectionSelector(sectionDefinition);
+function getSection(sectionName) {
+  return createGetSectionSelector(sectionName);
 }
 
 export { findOne, findMany, getSection };

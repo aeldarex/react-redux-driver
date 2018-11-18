@@ -7,79 +7,65 @@ import {
   DRIVER_DELETE_MANY,
 } from '../actionTypes';
 
-function createInsertPayload(object) {
-  if (!object) {
-    return { sectionName: '' };
-  }
-
-  const { stateSlice } = object.constructor || {};
-  const sectionName = stateSlice || '';
-
-  const objectCopy = JSON.parse(JSON.stringify(object));
-
-  return { sectionName, object: objectCopy };
-}
-
-function createFilterBasedPayload(objectDefinition, filter, update) {
-  const { stateSlice } = objectDefinition || {};
-  const sectionName = stateSlice || '';
-
-  return { sectionName, filter, update };
-}
-
-function insertOne(object) {
-  const payload = createInsertPayload(object);
-
+function insertOne(sectionName, object) {
   return {
     type: DRIVER_INSERT_ONE,
-    payload,
+    payload: {
+      sectionName,
+      object,
+    },
   };
 }
 
-function insertMany(objects) {
-  const payload = Array.isArray(objects)
-    ? objects.map(createInsertPayload)
-    : [];
-
+function insertMany(sectionName, objects) {
   return {
     type: DRIVER_INSERT_MANY,
-    payload,
+    payload: {
+      sectionName,
+      objects,
+    },
   };
 }
 
-function updateOne(objectDefinition, filter, update) {
-  const payload = createFilterBasedPayload(objectDefinition, filter, update);
-
+function updateOne(sectionName, filter, update) {
   return {
     type: DRIVER_UPDATE_ONE,
-    payload,
+    payload: {
+      sectionName,
+      filter,
+      update,
+    },
   };
 }
 
-function updateMany(objectDefinition, filter, update) {
-  const payload = createFilterBasedPayload(objectDefinition, filter, update);
-
+function updateMany(sectionName, filter, update) {
   return {
     type: DRIVER_UPDATE_MANY,
-    payload,
+    payload: {
+      sectionName,
+      filter,
+      update,
+    },
   };
 }
 
-function deleteOne(objectDefinition, filter) {
-  const payload = createFilterBasedPayload(objectDefinition, filter);
-
+function deleteOne(sectionName, filter) {
   return {
     type: DRIVER_DELETE_ONE,
-    payload,
+    payload: {
+      sectionName,
+      filter,
+    },
   };
 }
 
-function deleteMany(objectDefinition, filter) {
-  const payload = createFilterBasedPayload(objectDefinition, filter);
-
+function deleteMany(sectionName, filter) {
   return {
     type: DRIVER_DELETE_MANY,
-    payload,
+    payload: {
+      sectionName,
+      filter,
+    },
   };
 }
 

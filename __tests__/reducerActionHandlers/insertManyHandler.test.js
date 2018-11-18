@@ -3,9 +3,9 @@ import insertManyHandler from '../../src/reducerActionHandlers/insertManyHandler
 
 const invalidInputsWarning = `Warning: A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
-- Payload must be an array.`;
-const invalidInsertPayloadWarning = `Warning: An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
 - Payload must contain a sectionName string property with length greater than 0.
+- Payload must contain an objects property which is an array.`;
+const invalidInsertPayloadWarning = `Warning: An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
 - Payload must contain an object property with an id.`;
 
 describe('invalid parameter cases', () => {
@@ -59,15 +59,15 @@ describe('invalid parameter cases', () => {
       expect(updatedState).toBe(existingState);
     });
 
-    test('if given payload is not an array, returns given state object', () => {
+    test('if payload is null, returns given state object', () => {
       // Given
-      const existingState = {};
+      const state = {};
 
       // When
-      const updatedState = insertManyHandler(existingState, {});
+      const updatedState = insertManyHandler(state, null);
 
       // Then
-      expect(updatedState).toBe(existingState);
+      expect(updatedState).toBe(state);
     });
 
     test('if payload is invalid, publishes warning', () => {
@@ -77,10 +77,79 @@ describe('invalid parameter cases', () => {
       // Then
       expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
     });
+
+    describe('given defined payload', () => {
+      test('if sectionName is missing from payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = insertManyHandler(state, {});
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is empty string in payload, returns given state object', () => {
+        // Given
+        const state = {};
+
+        // When
+        const updatedState = insertManyHandler(state, { sectionName: '' });
+
+        // Then
+        expect(updatedState).toBe(state);
+      });
+
+      test('if sectionName is invalid, publishes warning', () => {
+        // When
+        insertManyHandler({}, {});
+
+        // Then
+        expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+      });
+
+      describe('given populated sectionName', () => {
+        test('if objects is missing from payload, returns given state object', () => {
+          // Given
+          const state = {};
+
+          // When
+          const updatedState = insertManyHandler(state, {
+            sectionName: 'SomeSection',
+          });
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+
+        test('if objects is not an array, returns given state object', () => {
+          // Given
+          const state = {};
+
+          // When
+          const updatedState = insertManyHandler(state, {
+            sectionName: 'SomeSection',
+            objects: {},
+          });
+
+          // Then
+          expect(updatedState).toBe(state);
+        });
+
+        test('if object is invalid, publishes warning', () => {
+          // When
+          insertManyHandler({}, { sectionName: 'SomeSection' });
+
+          // Then
+          expect(errorStub.calledWith(invalidInputsWarning)).toBe(true);
+        });
+      });
+    });
   });
 });
 
-describe('invalid insert payloads', () => {
+describe('invalid objects', () => {
   let errorStub;
 
   beforeAll(() => {
@@ -95,18 +164,16 @@ describe('invalid insert payloads', () => {
     errorStub.restore();
   });
 
-  test('given array contains invalid insert payloads, returns given state', () => {
+  test('given array containing invalid objects, returns given state', () => {
     // Given
+    const sectionName = 'SomeSection';
     const existingState = {};
 
     // When
-    const updatedState = insertManyHandler(existingState, [
-      {},
-      { sectionName: 'SomeSection' },
-      null,
-      { object: {} },
-      { object: { id: '1a' } },
-    ]);
+    const updatedState = insertManyHandler(existingState, {
+      sectionName,
+      objects: [undefined, {}, null],
+    });
 
     // Then
     expect(updatedState).toBe(existingState);
@@ -114,41 +181,32 @@ describe('invalid insert payloads', () => {
 
   test('given array contains invalid insert payloads, publishes warnings', () => {
     // Given
+    const sectionName = 'SomeSection';
     const existingState = {};
 
     // When
-    insertManyHandler(existingState, [
-      {},
-      { sectionName: 'SomeSection' },
-      null,
-      { object: {} },
-      { object: { id: '1a' } },
-    ]);
+    insertManyHandler(existingState, {
+      sectionName,
+      objects: [undefined, {}, null],
+    });
 
     // Then
-    expect(errorStub.callCount).toBe(5);
+    expect(errorStub.callCount).toBe(3);
     expect(errorStub.alwaysCalledWith(invalidInsertPayloadWarning)).toBe(true);
   });
 
   test('given array contains mixture of valid and invalid payloads, inserts objects from valid payloads', () => {
     // Given
     const existingState = {};
-    const sectionName = 'ValidSection';
+    const sectionName = 'SomeSection';
     const object1 = { id: '1b' };
     const object2 = { id: '1c' };
 
-    const validPayload1 = { sectionName, object: object1 };
-    const validPayload2 = { sectionName, object: object2 };
-
     // When
-    const updatedState = insertManyHandler(existingState, [
-      {},
-      { sectionName: 'SomeSection' },
-      validPayload1,
-      { object: {} },
-      { object: { id: '1a' } },
-      validPayload2,
-    ]);
+    const updatedState = insertManyHandler(existingState, {
+      sectionName,
+      objects: [undefined, object1, null, object2],
+    });
 
     // Then
     expect(updatedState).toEqual({
@@ -163,15 +221,15 @@ describe('invalid insert payloads', () => {
 test('given array of insert payloads and state slice undefined, creates state slice and inserts objects', () => {
   // Given
   const existingState = {};
-  const sectionName = 'ValidSection';
+  const sectionName = 'SomeSection';
   const object1 = { id: '1b' };
   const object2 = { id: '1c' };
 
   // When
-  const updatedState = insertManyHandler(existingState, [
-    { sectionName, object: object1 },
-    { sectionName, object: object2 },
-  ]);
+  const updatedState = insertManyHandler(existingState, {
+    sectionName,
+    objects: [object1, object2],
+  });
 
   // Then
   expect(updatedState).not.toBe(existingState);
@@ -185,7 +243,7 @@ test('given array of insert payloads and state slice undefined, creates state sl
 
 test('objects in state slice have different ids than given objects, inserts objects', () => {
   // Given
-  const sectionName = 'ValidSection';
+  const sectionName = 'SomeSection';
 
   const existingObject = { id: '1a' };
   const existingStateSlice = {
@@ -199,10 +257,10 @@ test('objects in state slice have different ids than given objects, inserts obje
   const newObject2 = { id: '1c' };
 
   // When
-  const updatedState = insertManyHandler(existingState, [
-    { sectionName, object: newObject1 },
-    { sectionName, object: newObject2 },
-  ]);
+  const updatedState = insertManyHandler(existingState, {
+    sectionName,
+    objects: [newObject1, newObject2],
+  });
 
   // Then
   expect(updatedState).not.toBe(existingState);
@@ -218,7 +276,7 @@ test('objects in state slice have different ids than given objects, inserts obje
 
 test('some objects with ids already exist in state, only adds objects with new ids to state', () => {
   // Given
-  const sectionName = 'ValidSection';
+  const sectionName = 'SomeSection';
 
   const existingObject = { id: '1a', otherField: 'hello' };
   const existingStateSlice = {
@@ -232,10 +290,10 @@ test('some objects with ids already exist in state, only adds objects with new i
   const newObject2 = { id: '1a' };
 
   // When
-  const updatedState = insertManyHandler(existingState, [
-    { sectionName, object: newObject1 },
-    { sectionName, object: newObject2 },
-  ]);
+  const updatedState = insertManyHandler(existingState, {
+    sectionName,
+    objects: [newObject1, newObject2],
+  });
 
   // Then
   expect(updatedState).not.toBe(existingState);
@@ -244,33 +302,6 @@ test('some objects with ids already exist in state, only adds objects with new i
     [sectionName]: {
       ...existingStateSlice,
       [newObject1.id]: newObject1,
-    },
-  });
-});
-
-test('insert payload are for different sections, adds each object to the correct section', () => {
-  // Given
-  const sectionName1 = 'ValidSectionA';
-  const sectionName2 = 'ValidSectionB';
-
-  const existingState = {};
-
-  const newObject1 = { id: '1a' };
-  const newObject2 = { id: '1b' };
-
-  // When
-  const updatedState = insertManyHandler(existingState, [
-    { sectionName: sectionName1, object: newObject1 },
-    { sectionName: sectionName2, object: newObject2 },
-  ]);
-
-  // Then
-  expect(updatedState).toEqual({
-    [sectionName1]: {
-      [newObject1.id]: newObject1,
-    },
-    [sectionName2]: {
-      [newObject2.id]: newObject2,
     },
   });
 });

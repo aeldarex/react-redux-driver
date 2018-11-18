@@ -1,14 +1,17 @@
 import warning from 'warning';
 import createSliceSelector from './createSliceSelector';
 
-function createGetSectionSelector(sectionDefinition) {
-  warning(
-    sectionDefinition && sectionDefinition.stateSlice,
-    'To create a working selector sectionDefinition must have a stateSlice property.',
-  );
+function createGetSectionSelector(sectionName) {
+  if (typeof sectionName !== 'string') {
+    warning(
+      false,
+      'To create a working getSection selector, sectionName must be a string.',
+    );
 
-  const { stateSlice } = sectionDefinition || {};
-  return createSliceSelector(stateSlice);
+    return () => ({});
+  }
+
+  return createSliceSelector(sectionName);
 }
 
 export default createGetSectionSelector;

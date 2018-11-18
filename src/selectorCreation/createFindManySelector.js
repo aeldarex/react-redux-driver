@@ -4,14 +4,17 @@ import { createFilterFunctionTree } from '../functionTreeCreation';
 import createSliceSelector from './createSliceSelector';
 import allValuesSelector from './basicSelectors/allValuesSelector';
 
-function createFindManySelector(objectDefinition, filter) {
-  warning(
-    objectDefinition && objectDefinition.stateSlice,
-    'To create a working selector objectDefinition must have a stateSlice property.',
-  );
+function createFindManySelector(sectionName, filter) {
+  if (typeof sectionName !== 'string') {
+    warning(
+      false,
+      'To create a working findMany selector, sectionName must be a string.',
+    );
 
-  const { stateSlice } = objectDefinition || {};
-  const sliceSelector = createSliceSelector(stateSlice);
+    return () => [];
+  }
+
+  const sliceSelector = createSliceSelector(sectionName);
   let selector = createSelector(
     sliceSelector,
     allValuesSelector,

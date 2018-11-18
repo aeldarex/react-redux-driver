@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import createGetSectionSelector from '../../src/selectorCreation/createGetSectionSelector';
 
-const invalidParametersWarning = 'Warning: To create a working selector sectionDefinition must have a stateSlice property.';
+const invalidParametersWarning = 'Warning: To create a working getSection selector, sectionName must be a string.';
 
 describe('invalid parameters', () => {
   let errorStub;
@@ -18,7 +18,7 @@ describe('invalid parameters', () => {
     errorStub.restore();
   });
 
-  test('if sectionDefinition is missing, publishes warning', () => {
+  test('if sectionName is missing, publishes warning', () => {
     // When
     createGetSectionSelector();
 
@@ -26,17 +26,26 @@ describe('invalid parameters', () => {
     expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
   });
 
-  test('if sectionDefinition does not have a stateSlice prop, publishes warning', () => {
+  test('if sectionName is missing, selector returns empty object', () => {
     // When
-    createGetSectionSelector({});
+    const selector = createGetSectionSelector();
+    const result = selector({});
+
+    // Then
+    expect(result).toEqual({});
+  });
+
+  test('if sectionName is not a string, publishes warning', () => {
+    // When
+    createGetSectionSelector(123);
 
     // Then
     expect(errorStub.calledWith(invalidParametersWarning)).toBe(true);
   });
 
-  test('if sectionDefinition is missing, selector returns empty object', () => {
+  test('if sectionName is not a string, selector returns empty object', () => {
     // When
-    const selector = createGetSectionSelector();
+    const selector = createGetSectionSelector(123);
     const result = selector({});
 
     // Then
@@ -46,10 +55,10 @@ describe('invalid parameters', () => {
 
 test('if section does not exist, returns empty object', () => {
   // Given
-  const sectionDefinition = { stateSlice: 'auth' };
+  const sectionName = 'auth';
 
   // When
-  const selector = createGetSectionSelector(sectionDefinition);
+  const selector = createGetSectionSelector(sectionName);
   const result = selector({});
 
   // Then
@@ -58,16 +67,15 @@ test('if section does not exist, returns empty object', () => {
 
 test('if section does exist, returns section object', () => {
   // Given
-  const stateSlice = 'auth';
-  const sectionDefinition = { stateSlice };
+  const sectionName = 'auth';
 
   const section = {};
   const state = {
-    [stateSlice]: section,
+    [sectionName]: section,
   };
 
   // When
-  const selector = createGetSectionSelector(sectionDefinition);
+  const selector = createGetSectionSelector(sectionName);
   const result = selector(state);
 
   // Then

@@ -5,14 +5,17 @@ import createSliceSelector from './createSliceSelector';
 import allValuesSelector from './basicSelectors/allValuesSelector';
 import firstItemSelector from './basicSelectors/firstItemSelector';
 
-function createFindOneSelector(objectDefinition, filter) {
-  warning(
-    objectDefinition && objectDefinition.stateSlice,
-    'To create a working selector objectDefinition must have a stateSlice property.',
-  );
+function createFindOneSelector(sectionName, filter) {
+  if (typeof sectionName !== 'string') {
+    warning(
+      false,
+      'To create a working findOne selector, sectionName must be a string.',
+    );
 
-  const { stateSlice } = objectDefinition || {};
-  const sliceSelector = createSliceSelector(stateSlice);
+    return () => {};
+  }
+
+  const sliceSelector = createSliceSelector(sectionName);
   let selector = createSelector(
     sliceSelector,
     allValuesSelector,
