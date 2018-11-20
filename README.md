@@ -210,7 +210,10 @@ An update object is used to describe how an object of a given type should be upd
 {
   scoring: {
     highScore: 12500,
-    recentScores: x => x.push(12500)
+    recentScores: x => {
+      x.push(12500);
+      return x;
+    }
   }
 }
 ```
@@ -219,7 +222,7 @@ As with the filter object, let's break things down.
 
 - scoring: As with filter, this is a complex object, so rather than do any operation on the property itself the driver will break down the complex object and consider the changes on its children.
 - highScore: The highScore field has the number 12500 given, as this is a primitive (non-object and non-function), the state will update the friend's highScore property to be 12500.
-- recentScores: The recentScores field has a function given, so the recentScores array will be passed into the function (in this case the Friend's recentScores will be x) and updated. This will result in the number 12500 being added to the recentScores array of the Friend.
+- recentScores: The recentScores field has a function given, so the recentScores array will be passed into the function (in this case the Friend's recentScores will be x) and replaced by the return value of the function. This will result in the number 12500 being added to the recentScores array of the Friend.
 
 As with filter, the update objects can be of any depth and update functions can be of any complexity, but the same warning regarding creation of long running operations applies here as well.
 
