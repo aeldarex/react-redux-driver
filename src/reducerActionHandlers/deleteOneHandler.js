@@ -1,5 +1,4 @@
 import warning from 'warning';
-import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import { filterOne } from '../sliceInteraction';
 import isPopulatedString from '../utils/isPopulatedString';
 
@@ -14,24 +13,30 @@ function deleteOneHandler(state, payload) {
     return state || {};
   }
 
-  const currentTable = state[sectionName];
-  if (!isObjectWithOwnProps(currentTable)) {
+  const currentTable = state[sectionName] || [];
+  if (currentTable.length === 0) {
     return state;
   }
 
-  const itemToDelete = filter
-    ? filterOne(currentTable, filter)
-    : Object.values(currentTable)[0];
+  let indexToDelete;
+  if (!filter) {
+    indexToDelete = 0;
+  } else {
+    const itemToDelete = filterOne(currentTable, filter);
+    if (itemToDelete) {
+      indexToDelete = itemToDelete.index;
+    }
+  }
 
-  if (!itemToDelete) {
+  if (indexToDelete == null) {
     return state;
   }
 
-  const { [itemToDelete.id]: _, ...itemsToKeep } = currentTable;
+  const newTable = currentTable.filter((x, index) => index !== indexToDelete);
 
   return {
     ...state,
-    [sectionName]: itemsToKeep,
+    [sectionName]: newTable,
   };
 }
 

@@ -20,7 +20,7 @@ function updateSectionHandler(state, payload) {
   }
 
   const currentSection = state[sectionName] ? state[sectionName] : {};
-  const newSection = updateOne(currentSection, update);
+  const newSection = updateOne({ index: 0, object: currentSection }, update);
 
   if (!newSection) {
     return state;
@@ -28,7 +28,7 @@ function updateSectionHandler(state, payload) {
 
   return {
     ...state,
-    [sectionName]: newSection,
+    [sectionName]: newSection.object,
   };
 }
 

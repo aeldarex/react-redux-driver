@@ -1,9 +1,13 @@
 import { createUpdateFunctionTree } from '../functionTreeCreation';
 import createObjectCopyWithUpdates from '../utils/createObjectCopyWithUpdates';
 
-function updateOne(object, update) {
+function updateOne(entry, update) {
+  const { index, object } = entry;
+
   const functionTree = createUpdateFunctionTree(update);
-  return createObjectCopyWithUpdates(object, functionTree);
+  const updatedObject = createObjectCopyWithUpdates(object, functionTree);
+
+  return updatedObject ? { index, object: updatedObject } : undefined;
 }
 
 export default updateOne;

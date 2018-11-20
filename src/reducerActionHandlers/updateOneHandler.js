@@ -19,15 +19,14 @@ function updateOneHandler(state, payload) {
     return state || {};
   }
 
-  const currentTable = state[sectionName];
-  if (!isObjectWithOwnProps(currentTable)) {
+  const currentTable = state[sectionName] || [];
+  if (currentTable.length === 0) {
     return state;
   }
 
   let newItem;
   if (!filter) {
-    const firstItem = Object.values(currentTable)[0];
-    newItem = updateOne(firstItem, update);
+    newItem = updateOne({ index: 0, object: currentTable[0] }, update);
   } else {
     const itemToUpdate = filterOne(currentTable, filter);
     if (itemToUpdate) {
@@ -39,9 +38,12 @@ function updateOneHandler(state, payload) {
     return state;
   }
 
+  const newTable = currentTable.slice();
+  newTable[newItem.index] = newItem.object;
+
   return {
     ...state,
-    [sectionName]: { ...currentTable, [newItem.id]: newItem },
+    [sectionName]: newTable,
   };
 }
 

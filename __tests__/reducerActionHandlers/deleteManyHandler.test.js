@@ -125,7 +125,7 @@ test('state slice for sectionName is undefined, returns given state', () => {
 test('state slice for object is empty, returns given state', () => {
   // Given
   const sectionName = 'SomeSectionName';
-  const existingState = { [sectionName]: {} };
+  const existingState = { [sectionName]: [] };
 
   // When
   const updatedState = deleteManyHandler(existingState, {
@@ -140,12 +140,9 @@ test('state slice populated and filter is undefined, deletes all objects in stat
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a' };
-  const object2 = { id: '1b' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-  };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
+  const existingStateSlice = [object1, object2];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -159,7 +156,7 @@ test('state slice populated and filter is undefined, deletes all objects in stat
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [sectionName]: {},
+    [sectionName]: [],
   });
 });
 
@@ -167,14 +164,10 @@ test('objects exist which match filter, deletes all objects matching filter', ()
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a', propA: 'hello' };
-  const object2 = { id: '1b', propA: 'goodbye' };
-  const object3 = { id: '1c', propA: 'hello' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-    [object3.id]: object3,
-  };
+  const object1 = { propA: 'hello' };
+  const object2 = { propA: 'goodbye' };
+  const object3 = { propA: 'hello' };
+  const existingStateSlice = [object1, object2, object3];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -189,9 +182,7 @@ test('objects exist which match filter, deletes all objects matching filter', ()
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object2.id]: object2,
-    },
+    [sectionName]: [object2],
   });
 });
 
@@ -199,14 +190,10 @@ test('no objects match filter, returns given state', () => {
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a' };
-  const object2 = { id: '1b' };
-  const object3 = { id: '1c' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-    [object3.id]: object3,
-  };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
+  const object3 = { propA: 15 };
+  const existingStateSlice = [object1, object2, object3];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -214,7 +201,7 @@ test('no objects match filter, returns given state', () => {
   // When
   const updatedState = deleteManyHandler(existingState, {
     sectionName,
-    filter: { id: '1d' },
+    filter: { propA: 20 },
   });
 
   // Then

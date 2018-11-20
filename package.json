@@ -17,7 +17,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "bson-objectid": "^1.2.4",
     "reselect": "^4.0.0",
     "warning": "^4.0.2"
   },

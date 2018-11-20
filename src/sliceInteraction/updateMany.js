@@ -1,17 +1,18 @@
 import { createUpdateFunctionTree } from '../functionTreeCreation';
 import createObjectCopyWithUpdates from '../utils/createObjectCopyWithUpdates';
 
-function updateMany(objects, update) {
+function updateMany(entries, update) {
   const functionTree = createUpdateFunctionTree(update);
 
-  const updatedObjects = [];
-  objects.forEach((x) => {
-    const updatedObject = createObjectCopyWithUpdates(x, functionTree);
+  const updatedEntries = [];
+  entries.forEach((x) => {
+    const { index, object } = x;
+    const updatedObject = createObjectCopyWithUpdates(object, functionTree);
     if (updatedObject) {
-      updatedObjects.push(updatedObject);
+      updatedEntries.push({ index, object: updatedObject });
     }
   });
-  return updatedObjects;
+  return updatedEntries;
 }
 
 export default updateMany;

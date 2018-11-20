@@ -125,7 +125,7 @@ test('state slice for sectionName is undefined, returns given state', () => {
 test('state slice for object is empty, returns given state', () => {
   // Given
   const sectionName = 'SomeSectionName';
-  const existingState = { [sectionName]: {} };
+  const existingState = { [sectionName]: [] };
 
   // When
   const updatedState = deleteOneHandler(existingState, {
@@ -140,12 +140,9 @@ test('state slice populated and filter is undefined, deletes first object in sta
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a' };
-  const object2 = { id: '1b' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-  };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
+  const existingStateSlice = [object1, object2];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -158,25 +155,17 @@ test('state slice populated and filter is undefined, deletes first object in sta
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
-  expect(updatedState).toEqual({
-    [sectionName]: {
-      [object2.id]: object2,
-    },
-  });
+  expect(updatedState).toEqual({ [sectionName]: [object2] });
 });
 
 test('objects exist which match filter, deletes first object matching filter', () => {
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a' };
-  const object2 = { id: '1b' };
-  const object3 = { id: '1c' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-    [object3.id]: object3,
-  };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
+  const object3 = { propA: 10 };
+  const existingStateSlice = [object1, object2, object3];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -184,17 +173,14 @@ test('objects exist which match filter, deletes first object matching filter', (
   // When
   const updatedState = deleteOneHandler(existingState, {
     sectionName,
-    filter: { id: '1b' },
+    filter: { propA: 10 },
   });
 
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object1.id]: object1,
-      [object3.id]: object3,
-    },
+    [sectionName]: [object1, object3],
   });
 });
 
@@ -202,14 +188,10 @@ test('no objects match filter, returns given state', () => {
   // Given
   const sectionName = 'SomeSectionName';
 
-  const object1 = { id: '1a' };
-  const object2 = { id: '1b' };
-  const object3 = { id: '1c' };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-    [object3.id]: object3,
-  };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
+  const object3 = { propA: 15 };
+  const existingStateSlice = [object1, object2, object3];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -217,7 +199,7 @@ test('no objects match filter, returns given state', () => {
   // When
   const updatedState = deleteOneHandler(existingState, {
     sectionName,
-    filter: { id: '1d' },
+    filter: { propA: 20 },
   });
 
   // Then

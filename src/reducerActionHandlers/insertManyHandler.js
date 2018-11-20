@@ -1,13 +1,13 @@
 import warning from 'warning';
 import isPopulatedString from '../utils/isPopulatedString';
-import isObjectWithId from '../utils/isObjectWithId';
+import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 
 const invalidInputsWarning = `A DRIVER_INSERT_MANY action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
 - Payload must contain a sectionName string property with length greater than 0.
 - Payload must contain an objects property which is an array.`;
-const invalidInsertPayloadWarning = `An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
-- Payload must contain an object property with an id.`;
+const invalidInsertPayloadWarning = `An object sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
+- Object must have own properties.`;
 
 function insertManyHandler(state, payload) {
   const { sectionName, objects } = payload || {};
@@ -16,27 +16,20 @@ function insertManyHandler(state, payload) {
     return state || {};
   }
 
-  const freshSlices = {};
+  const currentTable = state[sectionName] || [];
+  const newTable = currentTable.length !== 0 ? currentTable.slice() : [];
 
   objects.forEach((x) => {
-    if (!isObjectWithId(x)) {
+    if (!isObjectWithOwnProps(x)) {
       warning(false, invalidInsertPayloadWarning);
       return;
     }
 
-    let sliceToUpdate = freshSlices[sectionName];
-    if (!sliceToUpdate) {
-      sliceToUpdate = state[sectionName] ? { ...state[sectionName] } : {};
-      freshSlices[sectionName] = sliceToUpdate;
-    }
-
-    if (!sliceToUpdate[x.id]) {
-      sliceToUpdate[x.id] = x;
-    }
+    newTable.push(x);
   });
 
-  return Object.keys(freshSlices).length !== 0
-    ? { ...state, ...freshSlices }
+  return newTable.length !== currentTable.length
+    ? { ...state, [sectionName]: newTable }
     : state;
 }
 

@@ -4,7 +4,7 @@
 [![build status](https://travis-ci.org/aeldarex/react-redux-driver.svg?branch=master)](https://travis-ci.org/aeldarex/react-redux-driver)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/aeldarex/react-redux-driver/blob/master/README.md)
 
-A powerful set of reducer functions, dispatchable actions, and selector creators to simplify operations with react-redux. The end goal of the driver is to remove the need to write code for the majority of basic state operations. It accomplishes this by treating the redux state similar to a database, allowing you to write custom queries against your state while handling the idempotency of redux for you.
+A powerful set of reducer functions, dispatchable actions, and selector creators to simplify operations with react-redux. The end goal of the driver is to remove the need to write code for the majority of basic state operations. It accomplishes this by treating the redux state similar to a database, allowing you to write custom queries against your state while handling the immutability of redux for you.
 
 ## Installation
 

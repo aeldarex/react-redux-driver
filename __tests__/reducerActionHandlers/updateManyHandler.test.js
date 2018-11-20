@@ -169,7 +169,7 @@ test('state slice for sectionName is undefined, returns given state', () => {
 test('state slice for sectionName is empty, returns given state', () => {
   // Given
   const sectionName = 'SomeSection';
-  const existingState = { [sectionName]: {} };
+  const existingState = { [sectionName]: [] };
 
   // When
   const updatedState = updateManyHandler(existingState, {
@@ -184,12 +184,9 @@ test('state slice for sectionName is empty, returns given state', () => {
 test('if no filter specified, updates all objects in state slice', () => {
   // Given
   const sectionName = 'SomeSection';
-  const object1 = { id: '1a', propA: 1, propB: 10 };
-  const object2 = { id: '1b', propA: 2, propB: 20 };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-  };
+  const object1 = { propA: 1, propB: 10 };
+  const object2 = { propA: 2, propB: 20 };
+  const existingStateSlice = [object1, object2];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -203,27 +200,23 @@ test('if no filter specified, updates all objects in state slice', () => {
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
-  expect(updatedState[sectionName][object1.id]).not.toBe(object1);
-  expect(updatedState[sectionName][object2.id]).not.toBe(object2);
+  expect(updatedState[sectionName]).not.toContain(object1);
+  expect(updatedState[sectionName]).not.toContain(object2);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object1.id]: { ...object1, propA: 5, propB: 20 },
-      [object2.id]: { ...object2, propA: 5, propB: 40 },
-    },
+    [sectionName]: [
+      { ...object1, propA: 5, propB: 20 },
+      { ...object2, propA: 5, propB: 40 },
+    ],
   });
 });
 
 test('if objects are found which match filter, updates all matching objects', () => {
   // Given
   const sectionName = 'SomeSection';
-  const object1 = { id: '1a', propA: 1, propB: 10 };
-  const object2 = { id: '1b', propA: 2, propB: 20 };
-  const object3 = { id: '1c', propA: 2, propB: 30 };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-    [object3.id]: object3,
-  };
+  const object1 = { propA: 1, propB: 10 };
+  const object2 = { propA: 2, propB: 20 };
+  const object3 = { propA: 2, propB: 30 };
+  const existingStateSlice = [object1, object2, object3];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -238,26 +231,23 @@ test('if objects are found which match filter, updates all matching objects', ()
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
-  expect(updatedState[sectionName][object2.id]).not.toBe(object2);
-  expect(updatedState[sectionName][object3.id]).not.toBe(object3);
+  expect(updatedState[sectionName]).not.toContain(object2);
+  expect(updatedState[sectionName]).not.toContain(object3);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object1.id]: object1,
-      [object2.id]: { ...object2, propA: 5, propB: 40 },
-      [object3.id]: { ...object3, propA: 5, propB: 60 },
-    },
+    [sectionName]: [
+      object1,
+      { ...object2, propA: 5, propB: 40 },
+      { ...object3, propA: 5, propB: 60 },
+    ],
   });
 });
 
 test('but no matching object, returns given state', () => {
   // Given
   const sectionName = 'SomeSection';
-  const object1 = { id: '1a', propA: 1, propB: 10 };
-  const object2 = { id: '1b', propA: 2, propB: 20 };
-  const existingStateSlice = {
-    [object1.id]: object1,
-    [object2.id]: object2,
-  };
+  const object1 = { propA: 1, propB: 10 };
+  const object2 = { propA: 2, propB: 20 };
+  const existingStateSlice = [object1, object2];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -291,14 +281,10 @@ describe('update errors', () => {
   test('if all objects matching filter fail to update, returns given state', () => {
     // Given
     const sectionName = 'SomeSection';
-    const object1 = { id: '1a', propA: 1, propB: 10 };
-    const object2 = { id: '1b', propA: 2, propB: 20 };
-    const object3 = { id: '1c', propA: 2, propB: 30 };
-    const existingStateSlice = {
-      [object1.id]: object1,
-      [object2.id]: object2,
-      [object3.id]: object3,
-    };
+    const object1 = { propA: 1, propB: 10 };
+    const object2 = { propA: 2, propB: 20 };
+    const object3 = { propA: 2, propB: 30 };
+    const existingStateSlice = [object1, object2, object3];
     const existingState = {
       [sectionName]: existingStateSlice,
     };
@@ -317,14 +303,10 @@ describe('update errors', () => {
   test("if some objects matching filter fail to update, updates only objects that don't fail", () => {
     // Given
     const sectionName = 'SomeSection';
-    const object1 = { id: '1a', propA: 1, propB: 10 };
-    const object2 = { id: '1b', propA: 2, propB: '20' };
-    const object3 = { id: '1c', propA: 2, propB: 30 };
-    const existingStateSlice = {
-      [object1.id]: object1,
-      [object2.id]: object2,
-      [object3.id]: object3,
-    };
+    const object1 = { propA: 1, propB: 10 };
+    const object2 = { propA: 2, propB: '20' };
+    const object3 = { propA: 2, propB: 30 };
+    const existingStateSlice = [object1, object2, object3];
     const existingState = {
       [sectionName]: existingStateSlice,
     };
@@ -339,13 +321,9 @@ describe('update errors', () => {
     // Then
     expect(updatedState).not.toBe(existingState);
     expect(updatedState[sectionName]).not.toBe(existingStateSlice);
-    expect(updatedState[sectionName][object2.id]).not.toBe(object2);
+    expect(updatedState[sectionName]).not.toContain(object2);
     expect(updatedState).toEqual({
-      [sectionName]: {
-        [object1.id]: object1,
-        [object2.id]: { ...object2, propA: 5, propB: '200' },
-        [object3.id]: object3,
-      },
+      [sectionName]: [object1, { ...object2, propA: 5, propB: '200' }, object3],
     });
   });
 });

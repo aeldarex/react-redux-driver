@@ -4,7 +4,7 @@ import insertOneHandler from '../../src/reducerActionHandlers/insertOneHandler';
 const invalidInputsWarning = `Warning: A DRIVER_INSERT_ONE action was ignored because it's inputs did not meet the following criteria:
 - State must be defined and not null.
 - Payload must contain a sectionName string property with length greater than 0.
-- Payload must contain an object property with an id.`;
+- Payload must contain an object with own properties.`;
 
 describe('invalid parameter cases', () => {
   let errorStub;
@@ -121,7 +121,7 @@ describe('invalid parameter cases', () => {
           expect(updatedState).toBe(state);
         });
 
-        test('if object is missing an id in payload, returns given state object', () => {
+        test('if object is empty in payload, returns given state object', () => {
           // Given
           const state = {};
 
@@ -162,22 +162,17 @@ test('state slice for sectionName is undefined, creates state slice and inserts 
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object.id]: object,
-    },
+    [sectionName]: [object],
   });
 });
 
-test('object with id does not exist in current state slice, adds object to state slice', () => {
+test('state slice does exist, adds object to state slice', () => {
   // Given
   const sectionName = 'SomeSection';
 
   const existingObject1 = { id: '1a', propA: 1 };
   const existingObject2 = { id: '1b', propA: 2 };
-  const existingStateSlice = {
-    [existingObject1.id]: existingObject1,
-    [existingObject2.id]: existingObject2,
-  };
+  const existingStateSlice = [existingObject1, existingObject2];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
@@ -194,33 +189,6 @@ test('object with id does not exist in current state slice, adds object to state
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      ...existingStateSlice,
-      [newObject.id]: newObject,
-    },
+    [sectionName]: [...existingStateSlice, newObject],
   });
-});
-
-test('and object with id does exist, returns state without changes', () => {
-  // Given
-  const sectionName = 'SomeSection';
-
-  const existingObject1 = { id: '1a', propA: 1 };
-  const existingObject2 = { id: '1b', propA: 2 };
-  const existingStateSlice = {
-    [existingObject1.id]: existingObject1,
-    [existingObject2.id]: existingObject2,
-  };
-  const existingState = {
-    [sectionName]: existingStateSlice,
-  };
-
-  // When
-  const updatedState = insertOneHandler(existingState, {
-    sectionName,
-    object: existingObject2,
-  });
-
-  // Then
-  expect(updatedState).toBe(existingState);
 });

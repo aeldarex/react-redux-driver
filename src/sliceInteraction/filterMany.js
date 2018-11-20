@@ -3,14 +3,18 @@ import { createFilterFunctionTree } from '../functionTreeCreation';
 function filterMany(table, filter) {
   const functionTree = createFilterFunctionTree(filter);
 
-  const allObjects = Object.values(table);
-  return allObjects.filter((x) => {
+  const matchingItems = [];
+  table.forEach((x, index) => {
     try {
-      return functionTree(x);
+      if (functionTree(x)) {
+        matchingItems.push({ index, object: x });
+      }
     } catch (_) {
-      return false;
+      // Ignore failures
     }
   });
+
+  return matchingItems;
 }
 
 export default filterMany;

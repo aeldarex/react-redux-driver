@@ -19,15 +19,18 @@ function updateManyHandler(state, payload) {
     return state || {};
   }
 
-  const currentTable = state[sectionName];
-  if (!isObjectWithOwnProps(currentTable)) {
+  const currentTable = state[sectionName] || [];
+  if (currentTable.length === 0) {
     return state;
   }
 
   let newItems;
   if (!filter) {
-    const allItems = Object.values(currentTable);
-    newItems = updateMany(allItems, update);
+    const itemsToUpdate = currentTable.map((x, index) => ({
+      index,
+      object: x,
+    }));
+    newItems = updateMany(itemsToUpdate, update);
   } else {
     const itemsToUpdate = filterMany(currentTable, filter);
     if (itemsToUpdate.length !== 0) {
@@ -39,14 +42,15 @@ function updateManyHandler(state, payload) {
     return state;
   }
 
-  const newItemTable = {};
-  newItems.forEach((i) => {
-    newItemTable[i.id] = i;
+  const newTable = currentTable.slice();
+  newItems.forEach((e) => {
+    const { index, object } = e;
+    newTable[index] = object;
   });
 
   return {
     ...state,
-    [sectionName]: { ...currentTable, ...newItemTable },
+    [sectionName]: newTable,
   };
 }
 

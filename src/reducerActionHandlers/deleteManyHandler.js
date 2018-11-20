@@ -1,5 +1,4 @@
 import warning from 'warning';
-import isObjectWithOwnProps from '../utils/isObjectWithOwnProps';
 import { filterMany } from '../sliceInteraction';
 import isPopulatedString from '../utils/isPopulatedString';
 
@@ -14,30 +13,36 @@ function deleteManyHandler(state, payload) {
     return state || {};
   }
 
-  const currentTable = state[sectionName];
-  if (!isObjectWithOwnProps(currentTable)) {
+  const currentTable = state[sectionName] || [];
+  if (currentTable.length === 0) {
     return state;
   }
 
-  let updatedTable;
+  let newTable;
   if (!filter) {
-    updatedTable = {};
+    newTable = [];
   } else {
     const itemsToDelete = filterMany(currentTable, filter);
 
     if (itemsToDelete.length !== 0) {
-      updatedTable = { ...currentTable };
-      itemsToDelete.forEach(e => delete updatedTable[e.id]);
+      const indexesToDelete = itemsToDelete.reduce(
+        (indexTable, nextItem) => ({
+          ...indexTable,
+          [nextItem.index]: true,
+        }),
+        {},
+      );
+      newTable = currentTable.filter((x, index) => !indexesToDelete[index]);
     }
   }
 
-  if (!updatedTable) {
+  if (!newTable) {
     return state;
   }
 
   return {
     ...state,
-    [sectionName]: updatedTable,
+    [sectionName]: newTable,
   };
 }
 

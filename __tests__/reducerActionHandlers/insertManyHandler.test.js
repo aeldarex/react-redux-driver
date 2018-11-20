@@ -5,8 +5,8 @@ const invalidInputsWarning = `Warning: A DRIVER_INSERT_MANY action was ignored b
 - State must be defined and not null.
 - Payload must contain a sectionName string property with length greater than 0.
 - Payload must contain an objects property which is an array.`;
-const invalidInsertPayloadWarning = `Warning: An insert payload sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
-- Payload must contain an object property with an id.`;
+const invalidInsertPayloadWarning = `Warning: An object sent as part of a DRIVER_INSERT_MANY action was ignored because it did not meet the following criteria:
+- Object must have own properties.`;
 
 describe('invalid parameter cases', () => {
   let errorStub;
@@ -199,8 +199,8 @@ describe('invalid objects', () => {
     // Given
     const existingState = {};
     const sectionName = 'SomeSection';
-    const object1 = { id: '1b' };
-    const object2 = { id: '1c' };
+    const object1 = { propA: 5 };
+    const object2 = { propA: 10 };
 
     // When
     const updatedState = insertManyHandler(existingState, {
@@ -210,10 +210,7 @@ describe('invalid objects', () => {
 
     // Then
     expect(updatedState).toEqual({
-      [sectionName]: {
-        [object1.id]: object1,
-        [object2.id]: object2,
-      },
+      [sectionName]: [object1, object2],
     });
   });
 });
@@ -222,8 +219,8 @@ test('given array of insert payloads and state slice undefined, creates state sl
   // Given
   const existingState = {};
   const sectionName = 'SomeSection';
-  const object1 = { id: '1b' };
-  const object2 = { id: '1c' };
+  const object1 = { propA: 5 };
+  const object2 = { propA: 10 };
 
   // When
   const updatedState = insertManyHandler(existingState, {
@@ -234,10 +231,7 @@ test('given array of insert payloads and state slice undefined, creates state sl
   // Then
   expect(updatedState).not.toBe(existingState);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      [object1.id]: object1,
-      [object2.id]: object2,
-    },
+    [sectionName]: [object1, object2],
   });
 });
 
@@ -245,16 +239,14 @@ test('objects in state slice have different ids than given objects, inserts obje
   // Given
   const sectionName = 'SomeSection';
 
-  const existingObject = { id: '1a' };
-  const existingStateSlice = {
-    [existingObject.id]: existingObject,
-  };
+  const existingObject = { propA: 5 };
+  const existingStateSlice = [existingObject];
   const existingState = {
     [sectionName]: existingStateSlice,
   };
 
-  const newObject1 = { id: '1b' };
-  const newObject2 = { id: '1c' };
+  const newObject1 = { propA: 10 };
+  const newObject2 = { propA: 15 };
 
   // When
   const updatedState = insertManyHandler(existingState, {
@@ -266,42 +258,6 @@ test('objects in state slice have different ids than given objects, inserts obje
   expect(updatedState).not.toBe(existingState);
   expect(updatedState[sectionName]).not.toBe(existingStateSlice);
   expect(updatedState).toEqual({
-    [sectionName]: {
-      ...existingStateSlice,
-      [newObject1.id]: newObject1,
-      [newObject2.id]: newObject2,
-    },
-  });
-});
-
-test('some objects with ids already exist in state, only adds objects with new ids to state', () => {
-  // Given
-  const sectionName = 'SomeSection';
-
-  const existingObject = { id: '1a', otherField: 'hello' };
-  const existingStateSlice = {
-    [existingObject.id]: existingObject,
-  };
-  const existingState = {
-    [sectionName]: existingStateSlice,
-  };
-
-  const newObject1 = { id: '1b' };
-  const newObject2 = { id: '1a' };
-
-  // When
-  const updatedState = insertManyHandler(existingState, {
-    sectionName,
-    objects: [newObject1, newObject2],
-  });
-
-  // Then
-  expect(updatedState).not.toBe(existingState);
-  expect(updatedState[sectionName]).not.toBe(existingStateSlice);
-  expect(updatedState).toEqual({
-    [sectionName]: {
-      ...existingStateSlice,
-      [newObject1.id]: newObject1,
-    },
+    [sectionName]: [...existingStateSlice, newObject1, newObject2],
   });
 });

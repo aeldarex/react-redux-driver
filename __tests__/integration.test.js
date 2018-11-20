@@ -13,8 +13,8 @@ import reducer from '../src/reducer';
 test('inserted objects using insertOne action can be located with access driver findMany selector', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a' };
-  const testObject2 = { id: '1b' };
+  const testObject1 = { propA: 10 };
+  const testObject2 = { propA: 100 };
 
   let state = {};
 
@@ -35,8 +35,8 @@ test('inserted objects using insertOne action can be located with access driver 
 test('inserted objects using insertMany action can be located with access driver findMany selector', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a' };
-  const testObject2 = { id: '1b' };
+  const testObject1 = { propA: 10 };
+  const testObject2 = { propA: 100 };
 
   let state = {};
 
@@ -54,10 +54,10 @@ test('inserted objects using insertMany action can be located with access driver
 test('inserted objects using insertMany, then delete one with deleteOne, then get all remaining with access driver findMany selector', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a', propA: 1 };
-  const testObject2 = { id: '1b', propA: 2 };
-  const testObject3 = { id: '1c', propA: 3 };
-  const testObject4 = { id: '1d', propA: 4 };
+  const testObject1 = { propA: 1 };
+  const testObject2 = { propA: 2 };
+  const testObject3 = { propA: 3 };
+  const testObject4 = { propA: 4 };
 
   let state = {};
 
@@ -83,10 +83,10 @@ test('inserted objects using insertMany, then delete one with deleteOne, then ge
 test('inserted objects using insertMany, then delete some with deleteMany, then get all remaining with access driver findMany selector', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a', propA: 1 };
-  const testObject2 = { id: '1b', propA: 2 };
-  const testObject3 = { id: '1c', propA: 3 };
-  const testObject4 = { id: '1d', propA: 2 };
+  const testObject1 = { propA: 1 };
+  const testObject2 = { propA: 2 };
+  const testObject3 = { propA: 3 };
+  const testObject4 = { propA: 2 };
 
   let state = {};
 
@@ -113,25 +113,21 @@ test('insert objects using insertMany action, then find specific objects using c
   // Given
   const sectionName = 'TestObjects';
   const testObject1 = {
-    id: '1a',
     sectionNumber: 1,
     childObj1: { propA: 24 },
     childObj2: { propB: 'cool string' },
   };
   const testObject2 = {
-    id: '1b',
     sectionNumber: 1,
     childObj1: { propA: 15 },
     childObj2: { propB: 'lame string' },
   };
   const testObject3 = {
-    id: '1c',
     sectionNumber: 1,
     childObj1: { propA: 9 },
     childObj2: { propB: 'super cool string' },
   };
   const testObject4 = {
-    id: '1d',
     sectionNumber: 1,
     childObj1: { propA: 28 },
     childObj2: { propB: 'super lame string' },
@@ -162,10 +158,10 @@ test('insert objects using insertMany action, then find specific objects using c
 test('insert objects using insertMany action, then delete one with deleteOne using complex filter, then get all remaining with findMany', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a', propA: 1, propB: { propC: 'hello' } };
-  const testObject2 = { id: '1b', propA: 2, propB: { propC: 'goodbye' } };
-  const testObject3 = { id: '1c', propA: 3, propB: { propC: 'goodbye' } };
-  const testObject4 = { id: '1d', propA: 4, propB: { propC: 'hello' } };
+  const testObject1 = { propA: 1, propB: { propC: 'hello' } };
+  const testObject2 = { propA: 2, propB: { propC: 'goodbye' } };
+  const testObject3 = { propA: 3, propB: { propC: 'goodbye' } };
+  const testObject4 = { propA: 4, propB: { propC: 'hello' } };
 
   let state = {};
 
@@ -194,10 +190,10 @@ test('insert objects using insertMany action, then delete one with deleteOne usi
 test('insert objects using insertMany action, then delete multiple with deleteMany using complex filter, then get all remaining with findMany', () => {
   // Given
   const sectionName = 'TestObjects';
-  const testObject1 = { id: '1a', propA: 1, propB: { propC: 'hello' } };
-  const testObject2 = { id: '1b', propA: 2, propB: { propC: 'goodbye' } };
-  const testObject3 = { id: '1c', propA: 3, propB: { propC: 'goodbye' } };
-  const testObject4 = { id: '1d', propA: 4, propB: { propC: 'hello' } };
+  const testObject1 = { propA: 1, propB: { propC: 'hello' } };
+  const testObject2 = { propA: 2, propB: { propC: 'goodbye' } };
+  const testObject3 = { propA: 3, propB: { propC: 'goodbye' } };
+  const testObject4 = { propA: 4, propB: { propC: 'hello' } };
 
   let state = {};
 
@@ -223,21 +219,18 @@ test('insert objects using insertMany action, then delete multiple with deleteMa
   expect(locatedObjects).toEqual([testObject1, testObject4]);
 });
 
-test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with findMany', () => {
+test('insert objects using insertMany action, then update one with updateOne using complex filter, then get the updated item with findOne', () => {
   // Given
   const sectionName = 'TestObjects';
   const testObject1 = {
-    id: '1a',
     propA: 1,
     propB: { propC: 'good afternoon' },
   };
   const testObject2 = {
-    id: '1b',
     propA: 2,
     propB: { propC: 'good afternoon' },
   };
   const testObject3 = {
-    id: '1c',
     propA: 3,
     propB: { propC: 'good afternoon' },
   };
@@ -265,13 +258,11 @@ test('insert objects using insertMany action, then update one with updateOne usi
   );
   state = reducer(state, updateAction);
 
-  const selector = findMany(sectionName, { id: testObject2.id });
-  const locatedObjects = selector(state);
+  const selector = findOne(sectionName, { propA: 4 });
+  const locatedObject = selector(state);
 
   // Then
-  expect(locatedObjects.length).toBe(1);
-  expect(locatedObjects[0]).toEqual({
-    id: testObject2.id,
+  expect(locatedObject).toEqual({
     propA: 4,
     propB: {
       propC: 'good afternoon and night',
@@ -283,17 +274,14 @@ test('insert objects using insertMany action, then get an item with findOne', ()
   // Given
   const sectionName = 'TestObjects';
   const testObject1 = {
-    id: '1a',
     propA: 1,
     propB: { propC: 'good morning' },
   };
   const testObject2 = {
-    id: '1b',
     propA: 1,
     propB: { propC: 'good afternoon' },
   };
   const testObject3 = {
-    id: '1c',
     propA: 1,
     propB: { propC: 'good evening' },
   };
@@ -322,22 +310,18 @@ test('insert objects using insertMany action, then update some using updateMany,
   // Given
   const sectionName = 'TestObjects';
   const testObject1 = {
-    id: '1a',
     propA: 1,
     propB: { propC: 'good morning' },
   };
   const testObject2 = {
-    id: '1b',
     propA: 2,
     propB: { propC: 'good afternoon' },
   };
   const testObject3 = {
-    id: '1c',
     propA: 2,
     propB: { propC: 'good evening' },
   };
   const testObject4 = {
-    id: '1d',
     propA: 3,
     propB: { propC: 'good night' },
   };
@@ -381,12 +365,10 @@ test('insert objects using insertMany action, then update all with new nested fi
   // Given
   const sectionName = 'TestObjects';
   const testObject1 = {
-    id: '1a',
     propA: 1,
     propB: { propC: 'good morning' },
   };
   const testObject2 = {
-    id: '1b',
     propA: 2,
     propB: { propC: 'good afternoon' },
   };
